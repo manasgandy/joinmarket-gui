@@ -1,0 +1,32 @@
+#QR {
+	margin: 1em;
+}
+
+#address-div {
+	background: #f8f9fa;
+	padding: 0.5em;
+	margin: auto;
+}
+
+#address #middle {
+	font-weight: 100;
+	display: none;
+}
+
+#address #start,
+#address #end {
+	font-weight: bold;
+}
+
+#copy-icon {
+	float: right;
+}
+
+@media (min-width: 576px) {
+	#address #middle-dots {
+		display: none;
+	}
+	#address #middle {
+		display: inherit;
+	}
+}
