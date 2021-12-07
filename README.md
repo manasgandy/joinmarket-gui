@@ -9,3 +9,12 @@
 <img src="images/create_wallet.png" alt="Create">
 
 <img src="images/unlock.png" alt="Unlock">
+
+## How to install
+
+- Install Python 3.6 or higher
+- `pip install Flask`
+- `pip install requests`
+- `cd src`
+- `export FLASK_APP=app`
+- `flask run`

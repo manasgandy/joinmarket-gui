@@ -16,6 +16,7 @@
 			<h2 class="text-center mb-3">Yield generator</h2>
 			<div class="row">
 				<div class="col-lg-6 offset-lg-3 col-sm-12">
+					{% if not fb_exists %}
 					<form id="get-fb-address" action="/getfbaddress" method="POST">
 						<label>Year (YYYY)</label>
 						<input type="number" name="lockdate-year" class="form-control mb-3" required>
@@ -23,6 +24,15 @@
 						<input type="number" name="lockdate-month" class="form-control mb-3" required>
 						<button type="submit" class="btn btn-primary" style="width: 100%">Get Fidelity Bond address</button>
 					</form>
+					{% elif not yg_running %}
+					<form id="start-yg" action="/start-yg" method="POST">
+						<label>Coinjoin fee rate in %</label>
+						<input type="number" name="cjfee_r" value="0.20" required class="form-control mb-3">
+						<button type="submit" class="btn btn-primary" style="width: 100%">Start Yield Generator</button>
+					</form>
+					{% else %}
+					<a href="/stop-yg" class="btn btn-danger" style="width: 100%">Stop Yield generator</a>
+					{% endif %}
 				</div>
 			</div>
 

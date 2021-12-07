@@ -18,10 +18,18 @@
 				<div class="col text-center">
 					<span class="h2">{{balance_sats}}</span> sats
 					<br/>
+					<!-- <span class="h3">{{fidelity_bond}}</span> sats -->
+					<!-- <br/> -->
 					<a class="btn btn-primary mt-3" style="width: 10em" href="/deposit">Deposit</a>
 					<!-- <button class="btn btn-outline-primary mt-3" style="width: 10em">Withdraw</button> -->
 					<br/>
-					<a class="btn btn-warning mt-3" style="width: 10em" href="/yg">Generate Yield</a>
+					{% if sufficient_balance_yg %}
+						<a class="btn btn-warning mt-3" style="width: 10em" href="/yg">Yield Generator</a>
+					{% else %}
+						<a class="btn btn-warning mt-3 disabled" style="width: 10em" href="/yg">Yield Generator</a>
+						<br/>
+						<small>Insufficient balance for generating yield</small>
+					{% endif %}
 					<br/>
 					<a class="btn btn-danger mt-3" style="width: 10em" href="/lock">Lock</a>
 				</div>

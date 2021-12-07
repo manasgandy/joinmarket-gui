@@ -4,8 +4,9 @@
 
 #address-div {
 	background: #f8f9fa;
-	padding: 0.5em;
+	padding: 1em;
 	margin: auto;
+	width: fit-content;
 }
 
 #address #middle {
@@ -18,11 +19,18 @@
 	font-weight: bold;
 }
 
-#copy-icon {
+#copy-button {
 	float: right;
+	position: relative;
+	bottom:  0.5em;
+	left: 1em;
 }
 
-@media (min-width: 768px) {
+#copy-button:hover {
+	color: blue;
+}
+
+@media (min-width: 600px) {
 	#address #middle-dots {
 		display: none;
 	}

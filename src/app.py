@@ -5,9 +5,11 @@ import logging
 
 app = Flask(__name__)
 
-API_IP = "10.0.0.18"
+API_IP = "10.0.0.4"
 API_PORT = 28183
 API_URL = "https://" + API_IP + ":" + str(API_PORT) + "/api/v1"
+
+MINSIZE = 100000
 
 def get_token():
 	f = open("token.dat", "r")
@@ -37,6 +39,14 @@ def get_seedphrase():
 def delete_seedphrase():
 	os.remove('seed.dat')
 
+def comma_seperated_sats(balance):
+	balance_str = str(balance)
+	ans = ''
+	for i in range(0,len(balance_str)):
+		ans += balance_str[len(balance_str)-i-1]
+		if i%3==2 and i<len(balance_str)-1:
+			ans += ','
+	return ans[::-1]
 
 @app.route("/")
 def index_page():
@@ -112,12 +122,16 @@ def balance():
 	try:
 		r = req.get(API_URL + '/session', verify=False).json()
 		walletName = r['wallet_name']
+
 		authHeader = {'Authorization': 'Bearer ' + get_token()}
 		r = req.get(API_URL + '/wallet/'+walletName+'/display', headers=authHeader, verify=False)
+
 		if r.status_code == 200:
 			walletInfo = r.json()['walletinfo']
+			balance_sats = round(float(walletInfo['total_balance'])*1e8)
 			templateData = {
-				'balance_sats': round(float(walletInfo['total_balance'])*1e8)
+				'balance_sats': comma_seperated_sats(balance_sats),
+				'sufficient_balance_yg': balance_sats >= MINSIZE,
 			}
 			return render_template('balance.html', **templateData)
 		else:
@@ -169,7 +183,22 @@ def deposit(address=None):
 
 @app.route("/yg")
 def yg():
-	return render_template('yg.html')
+	r = req.get(API_URL + '/session', verify=False).json()
+	walletName = r['wallet_name']
+	makerRunning = r['maker_running']
+
+	authHeader = {'Authorization': 'Bearer ' + get_token()}
+	r = req.get(API_URL + '/wallet/'+walletName+'/display', headers=authHeader, verify=False)
+	if r.status_code == 200:
+		walletInfo = r.json()['walletinfo']
+		balance_sats = round(float(walletInfo['total_balance'])*1e8)
+		fb_sats = round(float(walletInfo['accounts'][0]['branches'][2]['balance'])*1e8)
+
+	templateData = {
+		'fb_exists': fb_sats>0,
+		'yg_running': makerRunning
+	}
+	return render_template('yg.html', **templateData)
 
 @app.route("/getfbaddress", methods=['POST'])
 def getfbaddress():
@@ -179,5 +208,37 @@ def getfbaddress():
 	url = API_URL + '/wallet/' + walletName + '/address/timelock/new/' + lockDate
 	authHeader = {'Authorization': 'Bearer ' + get_token()}
 	r = req.get(url, headers=authHeader, verify=False)
-	address = r.json()['address']
-	return deposit(address)
+	if r.status_code == 200:
+		address = r.json()['address']
+		return deposit(address)
+	else:
+		templateData = {
+			"error": "Can't create Fidelity bond. Error code:" + str(r.status_code)
+		}
+		return render_template('error.html', **templateData)
+
+@app.route("/start-yg", methods=['POST'])
+def startYG():
+	r = req.get(API_URL + '/session', verify=False).json()
+	walletName = r['wallet_name']
+	url = API_URL + '/wallet/' + walletName + '/maker/start'
+	authHeader = {'Authorization': 'Bearer ' + get_token()}
+	ygConfig = {
+		'txfee': 0,
+		'cjfee_r': request.form['cjfee_r'],
+		'cjfee_a': 0,
+		'ordertype': 'reloffer',
+		'minsize': MINSIZE
+
+	}
+	r = req.post(url, headers=authHeader, json=ygConfig, verify=False)
+	return redirect(url_for('balance'))
+
+@app.route("/stop-yg")
+def stopYG():
+	r = req.get(API_URL + '/session', verify=False).json()
+	walletName = r['wallet_name']
+	url = API_URL + '/wallet/' + walletName + '/maker/stop'
+	authHeader = {'Authorization': 'Bearer ' + get_token()}
+	r = req.get(url, headers=authHeader, verify=False)
+	return redirect(url_for('balance'))
