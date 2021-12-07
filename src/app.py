@@ -192,7 +192,11 @@ def yg():
 	if r.status_code == 200:
 		walletInfo = r.json()['walletinfo']
 		balance_sats = round(float(walletInfo['total_balance'])*1e8)
-		fb_sats = round(float(walletInfo['accounts'][0]['branches'][2]['balance'])*1e8)
+		fb_sats = 0
+		try:
+			fb_sats = round(float(walletInfo['accounts'][0]['branches'][2]['balance'])*1e8)
+		except:
+			pass
 
 	templateData = {
 		'fb_exists': fb_sats>0,
