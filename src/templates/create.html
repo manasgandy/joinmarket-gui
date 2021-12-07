@@ -16,17 +16,17 @@
 			<h2 class="text-center mb-3">Create wallet</h2>
 			<div class="row">
 				<div class="col-lg-6 offset-lg-3 col-sm-12">
-					<form id="create-wallet-form">
+					<form id="create-wallet-form" action="/create" method="POST">
 						<div class="mb-3">
 							<label for="walletname" class="form-label">Wallet Name (must end with .jmdat)</label>
 							<input type="text" class="form-control" id="walletname" value="mixing.jmdat" required pattern="[a-z0-9]+\.jmdat" name="walletname">
 						</div>
 						<div class="mb-3">
 							<label for="wallettype">Wallet type</label>
-							<select class="form-select" aria-label="Select wallet type" name="wallettype">
+							<select class="form-select" aria-label="Select wallet type" name="wallettype" disabled>
 								<option value="sw-fb" selected>Segwit Native with Fidelity Bonds</option>
-								<option value="sw">Segwit Native</option>
-								<option value="sw-legacy">Segwit Legacy</option>
+								<!-- <option value="sw">Segwit Native</option> -->
+								<!-- <option value="sw-legacy">Segwit Legacy</option> -->
 							</select>
 						</div>
 						<div class="mb-3">

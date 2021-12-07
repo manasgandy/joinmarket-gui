@@ -22,7 +22,7 @@
 	float: right;
 }
 
-@media (min-width: 420px) {
+@media (min-width: 768px) {
 	#address #middle-dots {
 		display: none;
 	}
