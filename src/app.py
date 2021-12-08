@@ -269,3 +269,20 @@ def stopYG():
 	authHeader = {'Authorization': 'Bearer ' + get_token()}
 	r = req.get(url, headers=authHeader, verify=False)
 	return redirect(url_for('balance'))
+
+@app.route("/coinjoin", methods=['GET', 'POST'])
+def coinjoin():
+	if request.method == 'GET':
+		return render_template('coinjoin.html')
+	else:
+		r = req.get(API_URL + '/session', verify=False).json()
+		walletName = r['wallet_name']
+
+		authHeader = {'Authorization': 'Bearer ' + get_token()}
+		url = API_URL + '/wallet/'+walletName+'/taker/coinjoin'
+		r = req.post(url, headers=authHeader, json=request.form, verify=False)
+		app.logger.info("Coinjoin POST status code: %s", r.status_code)
+		if r.status_code == 200:
+			return redirect(url_for("balance"))
+		else:
+			return r.json()

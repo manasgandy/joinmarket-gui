@@ -45,17 +45,30 @@
 					<!-- <span class="h3">{{fidelity_bond}}</span> sats -->
 					<!-- <br/> -->
 					<a class="btn btn-primary mt-3" style="width: 10em" href="/deposit">Deposit</a>
-					<br/>
+					<!-- <br/> -->
+
+					{% if not total_balance_sats == '0'  %}
 					<a class="btn btn-outline-primary mt-3" style="width: 10em" href="/withdraw">Withdraw</a>
+					{% else %}
+					<a class="btn btn-outline-primary mt-3 disabled" style="width: 10em" href="/withdraw">Withdraw</a>
 					<br/>
+					<small>Insufficient balance</small>
+					{% endif %}
+					<br/>
+
 					{% if sufficient_balance_yg %}
 						<a class="btn btn-warning mt-3" style="width: 10em" href="/yg">Yield Generator</a>
+						<!-- <br/> -->
+						<a href="/coinjoin" class="btn btn-outline-warning mt-3" style="width: 10em;">Coinjoin</a>
 					{% else %}
 						<a class="btn btn-warning mt-3 disabled" style="width: 10em" href="/yg">Yield Generator</a>
 						<br/>
-						<small>Insufficient balance for generating yield</small>
+						<a href="/coinjoin" class="btn btn-outline-warning mt-3 disabled" style="width: 10em;">Coinjoin</a>
+						<br/>
+						<small>Insufficient balance for generating yield or coinjoin</small>
 					{% endif %}
 					<br/>
+
 					<a class="btn btn-danger mt-3" style="width: 10em" href="/lock">Lock</a>
 				</div>
 			</div>

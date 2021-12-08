@@ -11,15 +11,15 @@
 		<!-- Custom CSS -->
 		<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='deposit.css') }}">
 
-		<title>Joinmarket | Withdraw</title>
+		<title>Joinmarket | Coinjoin</title>
 	</head>
 	<body>
 		<div class="container">
 			<h1 id="header" class="text-center mb-3 mt-2"><a href="/">Joinmarket</a></h1>
-			<h2 class="text-center mb-3">Withdraw</h2>
+			<h2 class="text-center mb-3">Coinjoin</h2>
 			<div class="row">
 				<div class="col-lg-4 offset-lg-4 col-md-6 offset-md-3 col-xs-12">
-					<form action="/withdraw" method="POST">
+					<form action="/coinjoin" method="POST">
 						<label class="form-label">Mixdepth</label>
 						<select name="mixdepth" class="form-control mb-3" required>
 							<option value="0">0</option>
@@ -28,14 +28,27 @@
 							<option value="3">3</option>
 							<option value="4">4</option>
 						</select>
-
 						<label class="form-label">Amount (sats)</label>
 						<input type="number" name="amount_sats" class="form-control mb-3" required>
 
+						<label class="form-label">Counterparties</label>
+						<select name="counterparties" class="form-control mb-3" required>
+							<option value="0">0</option>
+							<option value="1">1</option>
+							<option value="2">2</option>
+							<option value="3">3</option>
+							<option value="4">4</option>
+							<option value="5">5</option>
+							<option value="6">6</option>
+							<option value="7">7</option>
+							<option value="8">8</option>
+							<option value="9" selected>9</option>
+						</select>
+
 						<label class="form-label">Destination address</label>
 						<input type="text" name="destination" class="form-control mb-3" required>
-						
-						<button type="submit" class="btn btn-primary" style="width: 100%">Withdraw</button>
+
+						<button type="submit" class="btn btn-primary" style="width: 100%">Coinjoin</button>
 					</form>
 				</div>
 			</div>
