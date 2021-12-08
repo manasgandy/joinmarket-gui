@@ -290,3 +290,7 @@ def coinjoin():
 			return redirect(url_for("balance"))
 		else:
 			return r.json()
+
+@app.route("/about")
+def about():
+	return render_template("about.html")
