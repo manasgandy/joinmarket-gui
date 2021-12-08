@@ -326,3 +326,10 @@ def get_qr_code():
 	img.save(img_buf)
 	img_buf.seek(0)
 	return send_file(img_buf, mimetype='image/png')
+
+@app.route("/seedphrase")
+def seedphrase():
+	templateData = {
+		'seedphrase': get_seedphrase().split(' ')
+	}
+	return render_template('seed.html', **templateData)
