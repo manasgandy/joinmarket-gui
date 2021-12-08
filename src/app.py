@@ -122,6 +122,8 @@ def balance():
 	try:
 		r = req.get(API_URL + '/session', verify=False).json()
 		walletName = r['wallet_name']
+		makerRunning = r['maker_running']
+		coinjoinRunning = r['coinjoin_in_process']
 
 		authHeader = {'Authorization': 'Bearer ' + get_token()}
 		r = req.get(API_URL + '/wallet/'+walletName+'/display', headers=authHeader, verify=False)
@@ -137,6 +139,8 @@ def balance():
 				'total_balance_sats': comma_seperated_sats(total_balance_sats),
 				'mixdepth_balance_sats': mixdepth_balance_sats,
 				'sufficient_balance_yg': total_balance_sats >= MINSIZE,
+				'yg_running': makerRunning,
+				'coinjoin_running': coinjoinRunning,
 			}
 			return render_template('balance.html', **templateData)
 		else:

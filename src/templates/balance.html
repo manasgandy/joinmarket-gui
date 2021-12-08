@@ -44,28 +44,56 @@
 				<div class="col text-center">
 					<!-- <span class="h3">{{fidelity_bond}}</span> sats -->
 					<!-- <br/> -->
-					<a class="btn btn-primary mt-3" style="width: 10em" href="/deposit">Deposit</a>
+					<a class="btn btn-primary mt-3 me-1" style="width: 10em" href="/deposit">Deposit</a>
 					<!-- <br/> -->
 
 					{% if not total_balance_sats == '0'  %}
-					<a class="btn btn-outline-primary mt-3" style="width: 10em" href="/withdraw">Withdraw</a>
+					<a class="btn btn-outline-primary mt-3 ms-1" style="width: 10em" href="/withdraw">Withdraw</a>
 					{% else %}
-					<a class="btn btn-outline-primary mt-3 disabled" style="width: 10em" href="/withdraw">Withdraw</a>
-					<br/>
-					<small>Insufficient balance</small>
+					<a class="btn btn-outline-primary mt-3 ms-1 position-relative" style="width: 10em" href="#" title="Insufficient balance">
+						Withdraw
+						<span class="position-absolute top-0 start-100 translate-middle p-2 badge rounded-circle bg-secondary">
+						</span>
+					</a>
 					{% endif %}
 					<br/>
 
 					{% if sufficient_balance_yg %}
-						<a class="btn btn-warning mt-3" style="width: 10em" href="/yg">Yield Generator</a>
-						<!-- <br/> -->
-						<a href="/coinjoin" class="btn btn-outline-warning mt-3" style="width: 10em;">Coinjoin</a>
+						{% if yg_running %}
+						<a class="btn btn-warning mt-3 me-1 position-relative" style="width: 10em" href="/yg" title="Running">
+							Yield Generator
+							<span class="position-absolute top-0 start-100 translate-middle p-2 badge rounded-circle bg-success">
+							</span>
+						</a>
+						{% else %}
+						<a class="btn btn-warning mt-3 me-1 position-relative" style="width: 10em" href="/yg" title="Stopped">
+							Yield Generator
+							<span class="position-absolute top-0 start-100 translate-middle p-2 badge rounded-circle bg-secondary">
+							</span>
+						</a>
+						{% endif %}
+						{% if coinjoin_running %}
+							<a href="/coinjoin" class="btn btn-outline-warning mt-3 ms-1" style="width: 10em;" title="Running">
+								Coinjoin
+								<span class="position-absolute top-0 start-100 translate-middle p-2 badge rounded-circle bg-danger">
+								</span>
+							</a>
+						{% else %}
+							<a href="/coinjoin" class="btn btn-outline-warning mt-3 ms-1" style="width: 10em;">Coinjoin</a>
+						{% endif %}
 					{% else %}
-						<a class="btn btn-warning mt-3 disabled" style="width: 10em" href="/yg">Yield Generator</a>
-						<br/>
-						<a href="/coinjoin" class="btn btn-outline-warning mt-3 disabled" style="width: 10em;">Coinjoin</a>
-						<br/>
-						<small>Insufficient balance for generating yield or coinjoin</small>
+						<a class="btn btn-warning mt-3 me-1 position-relative" style="width: 10em" href="#" title="Insufficient balance">
+							Yield Generator
+							<span class="position-absolute top-0 start-100 translate-middle p-2 badge rounded-circle bg-secondary">
+							</span>
+						</a>
+						<a href="#" class="btn btn-outline-warning mt-3 ms-1 position-relative" style="width: 10em;" title="Insufficient balance">
+							Coinjoin
+							<span class="position-absolute top-0 start-100 translate-middle p-2 badge rounded-circle bg-secondary">
+							</span>
+						</a>
+						<!-- <br/> -->
+						<!-- <small>Insufficient balance for generating yield or coinjoin</small> -->
 					{% endif %}
 					<br/>
 
