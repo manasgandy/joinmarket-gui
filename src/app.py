@@ -186,6 +186,23 @@ def deposit(address=None):
 		}
 		return render_template('deposit.html', **templateData)
 
+@app.route("/withdraw", methods=['GET', 'POST'])
+def withdraw():
+	if request.method == 'GET':
+		return render_template('withdraw.html')
+	else:
+		r = req.get(API_URL + '/session', verify=False).json()
+		walletName = r['wallet_name']
+
+		authHeader = {'Authorization': 'Bearer ' + get_token()}
+		url = API_URL + '/wallet/'+walletName+'/taker/direct-send'
+		r = req.post(url, headers=authHeader, json=request.form, verify=False)
+		if r.status_code == 200:
+			return redirect(url_for("balance"))
+		else:
+			return r.json()
+
+
 @app.route("/yg")
 def yg():
 	r = req.get(API_URL + '/session', verify=False).json()
