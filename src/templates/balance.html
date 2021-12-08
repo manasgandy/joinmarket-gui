@@ -20,13 +20,14 @@
 					<br/>
 				</div>
 			</div>
+			{% if not total_balance_sats == '0' %}
 			<div class="row">
 				<div class="col-lg-4 offset-lg-4 col-md-6 offset-md-3 col-xs-12">
 					<table class="table table-striped">
 						<thead>
 							<tr>
 								<th>Mixdepth</th>
-								<th class="text-end">Balance</th>
+								<th class="text-end">Balance (sats)</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -40,20 +41,15 @@
 					</table>
 				</div>
 			</div>
+			{% endif %}
 			<div class="row">
 				<div class="col text-center">
-					<a class="btn btn-primary mt-3 me-1" style="width: 10em" href="/deposit">Deposit</a>
+					<a class="btn btn-primary mt-3" style="width: 10em" href="/deposit">Deposit</a>
 
 					{% if not total_balance_sats == '0'  %}
-					<a class="btn btn-outline-primary mt-3 ms-1" style="width: 10em" href="/withdraw">Withdraw</a>
-					{% else %}
-					<a class="btn btn-outline-primary mt-3 ms-1 position-relative" style="width: 10em" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Insufficient balance">
-						Withdraw
-						<span class="position-absolute top-0 start-100 translate-middle p-2 badge rounded-circle bg-secondary">
-						</span>
-					</a>
-					{% endif %}
+					<a class="btn btn-outline-primary mt-3 ms-2" style="width: 10em" href="/withdraw">Withdraw</a>
 					<br/>
+					{% endif %}
 
 					{% if sufficient_balance_yg %}
 						{% if yg_running %}
@@ -70,28 +66,16 @@
 						</a>
 						{% endif %}
 						{% if coinjoin_running %}
-							<a href="/coinjoin" class="btn btn-outline-warning mt-3 ms-1" style="width: 10em;" data-bs-toggle="tooltip" data-bs-placement="top" title="Running">
-								Coinjoin
-								<span class="position-absolute top-0 start-100 translate-middle p-2 badge rounded-circle bg-danger">
-								</span>
-							</a>
-						{% else %}
-							<a href="/coinjoin" class="btn btn-outline-warning mt-3 ms-1" style="width: 10em;">Coinjoin</a>
-						{% endif %}
-					{% else %}
-						<a class="btn btn-warning mt-3 me-1 position-relative" style="width: 10em" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Insufficient balance">
-							Yield Generator
-							<span class="position-absolute top-0 start-100 translate-middle p-2 badge rounded-circle bg-secondary">
-							</span>
-						</a>
-						<a href="#" class="btn btn-outline-warning mt-3 ms-1 position-relative" style="width: 10em;" data-bs-toggle="tooltip" data-bs-placement="top" title="Insufficient balance">
+						<a href="/coinjoin" class="btn btn-outline-warning mt-3 ms-1" style="width: 10em;" data-bs-toggle="tooltip" data-bs-placement="top" title="Running">
 							Coinjoin
-							<span class="position-absolute top-0 start-100 translate-middle p-2 badge rounded-circle bg-secondary">
+							<span class="position-absolute top-0 start-100 translate-middle p-2 badge rounded-circle bg-danger">
 							</span>
 						</a>
+						{% else %}
+						<a href="/coinjoin" class="btn btn-outline-warning mt-3 ms-1" style="width: 10em;">Coinjoin</a>
+						{% endif %}
 					{% endif %}
 					<br/>
-
 					<a class="btn btn-danger mt-3" style="width: 10em" href="/lock">Lock</a>
 				</div>
 			</div>
