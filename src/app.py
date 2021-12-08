@@ -1,11 +1,13 @@
-from flask import Flask, render_template, redirect, url_for, request
+from flask import Flask, render_template, redirect, url_for, request, send_file
 import requests as req
 import os
 import logging
+from io import BytesIO
+import qrcode
 
 app = Flask(__name__)
 
-API_IP = "10.0.0.4"
+API_IP = "10.0.0.18"
 API_PORT = 28183
 API_URL = "https://" + API_IP + ":" + str(API_PORT) + "/api/v1"
 
@@ -47,6 +49,18 @@ def comma_seperated_sats(balance):
 		if i%3==2 and i<len(balance_str)-1:
 			ans += ','
 	return ans[::-1]
+
+def generate_qr_code(url):
+	qr = qrcode.QRCode(
+		version=2,
+		error_correction=qrcode.constants.ERROR_CORRECT_H,
+		box_size=10,
+		border=4)
+
+	qr.add_data(url)
+	qr.make(fit=True)
+	img = qr.make_image()
+	return img
 
 @app.route("/")
 def index_page():
@@ -294,3 +308,12 @@ def coinjoin():
 @app.route("/about")
 def about():
 	return render_template("about.html")
+
+@app.route("/get_qr_code")
+def get_qr_code():
+	url = request.args.get('url')
+	img_buf = BytesIO()
+	img = generate_qr_code(url)
+	img.save(img_buf)
+	img_buf.seek(0)
+	return send_file(img_buf, mimetype='image/png')

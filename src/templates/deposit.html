@@ -16,11 +16,11 @@
 	<body>
 		<div class="container">
 			<h1 id="header" class="text-center mb-3 mt-2"><a href="/">Joinmarket</a></h1>
-			<h2 class="text-center mb-3">Deposit</h2>
+			<h2 class="text-center mb-1">Deposit</h2>
 			<div class="row">
 				<div class="col text-center">
-					<!-- <img id="QR" class="img-fluid" src="{{ url_for('static', filename='QR.png') }}" alt="QR code for the bitcoin address" /> -->
-					<div id="address-div" class="mt-2 rounded">
+					<img id="QR" class="img-fluid" src="/get_qr_code?url={{address}}" alt="QR code for the bitcoin address" />
+					<div id="address-div" class="rounded">
 						<span id="hidden-address" style="display: none;">{{address}}</span>
 						<span id="address" class="mt-2">
 							<span id="start">{{address[:6]}}</span><span id="middle">{{address[6:-6]}}</span><span id="middle-dots">......</span><span id="end">{{address[-6:]}}</span>
