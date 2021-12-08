@@ -16,8 +16,32 @@
 			<h2 class="text-center mb-3">Balance</h2>
 			<div class="row">
 				<div class="col text-center">
-					<span class="h2">{{balance_sats}}</span> sats
+					<span class="h3">{{total_balance_sats}}</span> sats
 					<br/>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-lg-4 offset-lg-4 col-md-6 offset-md-3 col-xs-12">
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th>Mixdepth</th>
+								<th class="text-end">Balance</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for mixdepth_balance in mixdepth_balance_sats %}
+							<tr>
+								<th>{{loop.index-1}}</th>
+								<th class="text-end">{{mixdepth_balance}}</th>
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col text-center">
 					<!-- <span class="h3">{{fidelity_bond}}</span> sats -->
 					<!-- <br/> -->
 					<a class="btn btn-primary mt-3" style="width: 10em" href="/deposit">Deposit</a>

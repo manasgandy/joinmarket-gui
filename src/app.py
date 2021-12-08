@@ -5,7 +5,7 @@ import logging
 
 app = Flask(__name__)
 
-API_IP = "localhost"
+API_IP = "10.0.0.4"
 API_PORT = 28183
 API_URL = "https://" + API_IP + ":" + str(API_PORT) + "/api/v1"
 
@@ -128,10 +128,15 @@ def balance():
 
 		if r.status_code == 200:
 			walletInfo = r.json()['walletinfo']
-			balance_sats = round(float(walletInfo['total_balance'])*1e8)
+			total_balance_sats = round(float(walletInfo['total_balance'])*1e8)
+			mixdepth_balance_sats = []
+			for i in range(5):
+				balance = comma_seperated_sats(round(float(walletInfo['accounts'][i]['account_balance'])*1e8))
+				mixdepth_balance_sats.append(balance)
 			templateData = {
-				'balance_sats': comma_seperated_sats(balance_sats),
-				'sufficient_balance_yg': balance_sats >= MINSIZE,
+				'total_balance_sats': comma_seperated_sats(total_balance_sats),
+				'mixdepth_balance_sats': mixdepth_balance_sats,
+				'sufficient_balance_yg': total_balance_sats >= MINSIZE,
 			}
 			return render_template('balance.html', **templateData)
 		else:
@@ -191,7 +196,7 @@ def yg():
 	r = req.get(API_URL + '/wallet/'+walletName+'/display', headers=authHeader, verify=False)
 	if r.status_code == 200:
 		walletInfo = r.json()['walletinfo']
-		balance_sats = round(float(walletInfo['total_balance'])*1e8)
+		total_balance_sats = round(float(walletInfo['total_balance'])*1e8)
 		fb_sats = 0
 		try:
 			fb_sats = round(float(walletInfo['accounts'][0]['branches'][2]['balance'])*1e8)
@@ -199,7 +204,8 @@ def yg():
 			pass
 
 	templateData = {
-		'fb_exists': fb_sats>0,
+		'fb_sats': comma_seperated_sats(fb_sats),
+		'fb_exists': fb_sats > 0,
 		'yg_running': makerRunning
 	}
 	return render_template('yg.html', **templateData)
@@ -229,7 +235,7 @@ def startYG():
 	authHeader = {'Authorization': 'Bearer ' + get_token()}
 	ygConfig = {
 		'txfee': 0,
-		'cjfee_r': request.form['cjfee_r'],
+		'cjfee_r': str(float(request.form['cjfee_r'])/100),
 		'cjfee_a': 0,
 		'ordertype': 'reloffer',
 		'minsize': MINSIZE

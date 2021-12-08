@@ -25,12 +25,14 @@
 						<button type="submit" class="btn btn-primary" style="width: 100%">Get Fidelity Bond address</button>
 					</form>
 					{% elif not yg_running %}
+					<p class="h3 text-center">Fidelity Bond: {{fb_sats}} sats</p>
 					<form id="start-yg" action="/start-yg" method="POST">
 						<label>Coinjoin fee rate in %</label>
 						<input type="number" name="cjfee_r" value="0.20" required class="form-control mb-3">
 						<button type="submit" class="btn btn-primary" style="width: 100%">Start Yield Generator</button>
 					</form>
 					{% else %}
+					<p class="h3 text-center">Fidelity Bond: {{fb_sats}} sats</p>
 					<a href="/stop-yg" class="btn btn-danger" style="width: 100%">Stop Yield generator</a>
 					{% endif %}
 				</div>
