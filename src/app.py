@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request, send_file
+from flask import Flask, render_template, redirect, url_for, request, send_file, flash
 import requests as req
 import os
 import logging
@@ -6,8 +6,9 @@ from io import BytesIO
 import qrcode
 
 app = Flask(__name__)
+app.secret_key = b'joinmarket-gui'
 
-API_IP = "10.0.0.18"
+API_IP = "10.0.0.4"
 API_PORT = 28183
 API_URL = "https://" + API_IP + ":" + str(API_PORT) + "/api/v1"
 
@@ -108,9 +109,11 @@ def unlock():
 			# confirm the session is unlocked
 			r = req.get(API_URL + '/session', verify=False).json()
 			assert(walletName == r['wallet_name'])
+			flash("Wallet unlocked successfully!", category="success")
 			# redirect to balance page
 			return redirect(url_for('balance'))
 		else:
+			flash("Error unlocking! Check password.", category="danger")
 			return redirect(url_for('unlock'))
 
 @app.route("/create", methods=['GET', 'POST'])
@@ -129,6 +132,7 @@ def create():
 			token = r.json()['token']
 			set_token(token)
 			save_seedphrase(seedphrase)
+			flash("Wallet created successfully!", category="success")
 			return redirect(url_for('balance'))
 
 @app.route("/balance")
@@ -174,6 +178,7 @@ def lock():
 		r = req.get(API_URL + '/wallet/'+walletName+'/lock', headers=authHeader, verify=False)
 		if r.status_code == 200:
 			delete_token()
+			flash('Wallet locked!', category="success")
 			return redirect(url_for('unlock'))
 		else:
 			return redirect(url_for('balance'))
@@ -216,9 +221,11 @@ def withdraw():
 		url = API_URL + '/wallet/'+walletName+'/taker/direct-send'
 		r = req.post(url, headers=authHeader, json=request.form, verify=False)
 		if r.status_code == 200:
+			flash("Funds withdrawn successfully!", category="success")
 			return redirect(url_for("balance"))
 		else:
-			return r.json()
+			flash("Error withdrawing funds. Error code: " + str(r.status_code), category="danger")
+			return render_template("withdraw.html")
 
 
 @app.route("/yg")
@@ -277,6 +284,7 @@ def startYG():
 
 	}
 	r = req.post(url, headers=authHeader, json=ygConfig, verify=False)
+	flash('Maker started successfully!', category="success")
 	return redirect(url_for('balance'))
 
 @app.route("/stop-yg")
@@ -286,6 +294,7 @@ def stopYG():
 	url = API_URL + '/wallet/' + walletName + '/maker/stop'
 	authHeader = {'Authorization': 'Bearer ' + get_token()}
 	r = req.get(url, headers=authHeader, verify=False)
+	flash('Maker stopped successfully!', category="success")
 	return redirect(url_for('balance'))
 
 @app.route("/coinjoin", methods=['GET', 'POST'])
@@ -299,8 +308,8 @@ def coinjoin():
 		authHeader = {'Authorization': 'Bearer ' + get_token()}
 		url = API_URL + '/wallet/'+walletName+'/taker/coinjoin'
 		r = req.post(url, headers=authHeader, json=request.form, verify=False)
-		app.logger.info("Coinjoin POST status code: %s", r.status_code)
 		if r.status_code == 200:
+			flash("Coinjoin submitted successfully!", category="success")
 			return redirect(url_for("balance"))
 		else:
 			return r.json()

@@ -15,6 +15,17 @@
 			<h1 id="header" class="text-center mb-3 mt-2"><a href="/">Joinmarket</a></h1>
 			<h2 class="text-center mb-3">Balance</h2>
 			<div class="row">
+				<div class="col-lg-6 offset-lg-3 col-sm-12 text-center">
+					{% with messages = get_flashed_messages(with_categories=true) %}
+						{% if messages %}
+							{% for category, message in messages %}
+							<div class="alert alert-{{category}}" role="alert">{{ message }}</div>
+							{% endfor %}
+						{% endif %}
+					{% endwith %}
+				</div>
+			</div>
+			<div class="row">
 				<div class="col text-center">
 					<span class="h3">{{total_balance_sats}}</span> sats
 					<br/>
