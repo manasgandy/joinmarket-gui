@@ -2,7 +2,7 @@
 
 ## Screenshots
 
-<img src="images/balance.png" alt="Balance">
+<img src="images/screenshot.png" alt="Balance">
 
 ## How to install
 
