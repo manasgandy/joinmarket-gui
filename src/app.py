@@ -66,6 +66,32 @@ def generate_qr_code(url):
 	img = qr.make_image()
 	return img
 
+def getSetting(section, field):
+	r = req.get(API_URL + '/session', verify=False).json()
+	walletName = r['wallet_name']
+	url = API_URL + '/wallet/' + walletName + '/configget'
+	authHeader = {'Authorization': 'Bearer ' + get_token()}
+	configJSON = {'section': section, 'field': field}
+	r = req.post(url, json=configJSON, headers=authHeader, verify=False)
+	return r.json()['configvalue']
+
+def setSettings(form):
+	for entry, value in form.items():
+		# app.logger.info('Entry: %s, value: %s', entry, value)
+		section, field = entry.split('.')
+		r = req.get(API_URL + '/session', verify=False).json()
+		walletName = r['wallet_name']
+
+		authHeader = {'Authorization': 'Bearer ' + get_token()}
+
+		settingsJSON = {
+			'section': section,
+			'field': field,
+			'value': value
+		}
+		r = req.post(API_URL + '/wallet/'+walletName+'/configset', json=settingsJSON, headers=authHeader, verify=False)
+
+
 @app.route("/")
 def index_page():
 	try:
@@ -343,3 +369,25 @@ def seedphrase():
 	except:
 		flash("Seed can't be retrieved!", category="danger")
 		return redirect(url_for("balance"))
+
+@app.route("/settings", methods=['GET', 'POST'])
+def settings():
+	settingsDict = {
+		# 'DAEMON': ['no_daemon', 'daemon_port', 'daemon_host', 'use_ssl'],
+		'BLOCKCHAIN': ['rpc_host', 'rpc_port', 'rpc_user', 'rpc_password', 'rpc_wallet_file'],
+		'POLICY': ['tx_fees']
+	}
+	settingsData = {}
+	if request.method == 'GET':
+		# populate settingsData dictionary
+		for section, fields in settingsDict.items():
+			settingsData[section] = {}
+			for field in fields:
+				settingsData[section][field] = getSetting(section, field)
+	else: # POST request method
+		setSettings(request.form)
+		for section, fields in settingsDict.items():
+			settingsData[section] = {}
+			for field in fields:
+				settingsData[section][field] = getSetting(section, field)
+	return render_template('settings.html', **settingsData)
