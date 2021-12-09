@@ -40,7 +40,10 @@ def get_seedphrase():
 	return seedphrase
 
 def delete_seedphrase():
-	os.remove('seed.dat')
+	try:
+		os.remove('seed.dat')
+	except:
+		pass
 
 def comma_seperated_sats(balance):
 	balance_str = str(balance)
@@ -109,6 +112,7 @@ def unlock():
 			# confirm the session is unlocked
 			r = req.get(API_URL + '/session', verify=False).json()
 			assert(walletName == r['wallet_name'])
+			# flash success alert
 			flash("Wallet unlocked successfully!", category="success")
 			# redirect to balance page
 			return redirect(url_for('balance'))
@@ -178,6 +182,7 @@ def lock():
 		r = req.get(API_URL + '/wallet/'+walletName+'/lock', headers=authHeader, verify=False)
 		if r.status_code == 200:
 			delete_token()
+			delete_seedphrase()
 			flash('Wallet locked!', category="success")
 			return redirect(url_for('unlock'))
 		else:
@@ -327,9 +332,14 @@ def get_qr_code():
 	img_buf.seek(0)
 	return send_file(img_buf, mimetype='image/png')
 
+# TODO: retrieve and save seed if not present (needs showseed API call)
 @app.route("/seedphrase")
 def seedphrase():
-	templateData = {
-		'seedphrase': get_seedphrase().split(' ')
-	}
-	return render_template('seed.html', **templateData)
+	try:
+		templateData = {
+			'seedphrase': get_seedphrase().split(' ')
+		}
+		return render_template('seed.html', **templateData)
+	except:
+		flash("Seed can't be retrieved!", category="danger")
+		return redirect(url_for("balance"))
