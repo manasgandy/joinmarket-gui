@@ -13,8 +13,36 @@
 		<title>Joinmarket | {% block title %}{% endblock %}</title>
 	</head>
 	<body>
+		<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+			<div class="container-fluid">
+				<a class="navbar-brand" href="/">Joinmarket</a>
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarSupportedContent">
+					<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+						{% if wallet_unlocked %}
+						<li class="nav-item">
+							<a class="nav-link" href="/balance">Balance</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="/seedphrase">Seedphrase</a>
+						</li>
+						{% endif %}
+						<li class="nav-item">
+							<a class="nav-link" href="/settings">Settings</a>
+						</li>
+						{% if wallet_unlocked %}
+						<li class="nav-item">
+							<a class="nav-link" href="/lock">Lock</a>
+						</li>
+						{% endif %}
+					</ul>
+				</div>
+			</div>
+		</nav>
 		<div class="container">
-			<h1 id="header" class="text-center mb-3 mt-2"><a href="/">Joinmarket</a></h1>
+			<!-- <h1 id="header" class="text-center mb-3 mt-2"><a href="/">Joinmarket</a></h1> -->
 			<h2 class="text-center mb-3"></h2>
 			{% block content %}{% endblock %}
 			<div id="footer" class="row mt-2">

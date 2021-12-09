@@ -118,6 +118,7 @@ def unlock():
 				return redirect(url_for('create'))
 			# prepare template data dictionary
 			templateData = {
+				'wallet_unlocked': False,
 				'wallets': listWallets
 			}
 			# render unlock page with list of wallets in <select>
@@ -184,6 +185,7 @@ def balance():
 				balance = comma_seperated_sats(round(float(walletInfo['accounts'][i]['account_balance'])*1e8))
 				mixdepth_balance_sats.append(balance)
 			templateData = {
+				'wallet_unlocked': True,
 				'total_balance_sats': comma_seperated_sats(total_balance_sats),
 				'mixdepth_balance_sats': mixdepth_balance_sats,
 				'sufficient_balance_yg': total_balance_sats >= MINSIZE,
@@ -229,6 +231,7 @@ def deposit(address=None):
 
 		if r.status_code == 200:
 			templateData = {
+				'wallet_unlocked': True,
 				'address': r.json()['address']
 			}
 			return render_template('deposit.html', **templateData)
@@ -243,7 +246,10 @@ def deposit(address=None):
 @app.route("/withdraw", methods=['GET', 'POST'])
 def withdraw():
 	if request.method == 'GET':
-		return render_template('withdraw.html')
+		templateData = {
+			'wallet_unlocked': True
+		}
+		return render_template('withdraw.html', **templateData)
 	else:
 		r = req.get(API_URL + '/session', verify=False).json()
 		walletName = r['wallet_name']
@@ -277,6 +283,7 @@ def yg():
 			pass
 
 	templateData = {
+		'wallet_unlocked': True,
 		'fb_sats': comma_seperated_sats(fb_sats),
 		'fb_exists': fb_sats > 0,
 		'yg_running': makerRunning
@@ -331,7 +338,10 @@ def stopYG():
 @app.route("/coinjoin", methods=['GET', 'POST'])
 def coinjoin():
 	if request.method == 'GET':
-		return render_template('coinjoin.html')
+		templateData = {
+			'wallet_unlocked': True,	
+		}
+		return render_template('coinjoin.html', **templateData)
 	else:
 		r = req.get(API_URL + '/session', verify=False).json()
 		walletName = r['wallet_name']
@@ -363,6 +373,7 @@ def get_qr_code():
 def seedphrase():
 	try:
 		templateData = {
+			'wallet_unlocked': True,
 			'seedphrase': get_seedphrase().split(' ')
 		}
 		return render_template('seed.html', **templateData)
