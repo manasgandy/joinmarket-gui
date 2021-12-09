@@ -1,117 +1,94 @@
-<!doctype html>
-<html lang="en">
-	<head>
-		<!-- Required meta tags -->
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-
-		<!-- Bootstrap CSS -->
-		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-
-		<title>Joinmarket | Balance</title>
-	</head>
-	<body>
-		<div class="container">
-			<h1 id="header" class="text-center mb-3 mt-2"><a href="/">Joinmarket</a></h1>
-			<h2 class="text-center mb-3">Balance</h2>
-			<div class="row">
-				<div class="col-lg-6 offset-lg-3 col-sm-12 text-center">
-					{% with messages = get_flashed_messages(with_categories=true) %}
-						{% if messages %}
-							{% for category, message in messages %}
-							<div class="alert alert-{{category}}" role="alert">{{ message }}</div>
-							{% endfor %}
-						{% endif %}
-					{% endwith %}
-				</div>
-			</div>
-			<div class="row">
-				<div class="col text-center">
-					<span class="h3">{{total_balance_sats}}</span> sats
-					<br/>
-				</div>
-			</div>
-			{% if not total_balance_sats == '0' %}
-			<div class="row">
-				<div class="col-lg-4 offset-lg-4 col-md-6 offset-md-3 col-xs-12">
-					<table class="table table-striped">
-						<thead>
-							<tr>
-								<th>Mixdepth</th>
-								<th class="text-end">Balance (sats)</th>
-							</tr>
-						</thead>
-						<tbody>
-							{% for mixdepth_balance in mixdepth_balance_sats %}
-							<tr>
-								<th>{{loop.index-1}}</th>
-								<th class="text-end">{{mixdepth_balance}}</th>
-							</tr>
-							{% endfor %}
-						</tbody>
-					</table>
-				</div>
-			</div>
+{% extends 'layout.html' %}
+{% block title %}Balance{% endblock %}
+{% block content %}
+<h2 class="text-center mb-3">Balance</h2>
+<div class="row">
+	<div class="col-lg-6 offset-lg-3 col-sm-12 text-center">
+		{% with messages = get_flashed_messages(with_categories=true) %}
+			{% if messages %}
+				{% for category, message in messages %}
+				<div class="alert alert-{{category}}" role="alert">{{ message }}</div>
+				{% endfor %}
 			{% endif %}
-			<div class="row">
-				<div class="col text-center">
-					<a class="btn btn-primary mt-3" style="width: 10em" href="/deposit">Deposit</a>
+		{% endwith %}
+	</div>
+</div>
+<div class="row">
+	<div class="col text-center">
+		<span class="h3">{{total_balance_sats}}</span> sats
+		<br/>
+	</div>
+</div>
+{% if not total_balance_sats == '0' %}
+<div class="row">
+	<div class="col-lg-4 offset-lg-4 col-md-6 offset-md-3 col-xs-12">
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>Mixdepth</th>
+					<th class="text-end">Balance (sats)</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for mixdepth_balance in mixdepth_balance_sats %}
+				<tr>
+					<th>{{loop.index-1}}</th>
+					<th class="text-end">{{mixdepth_balance}}</th>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+{% endif %}
+<div class="row">
+	<div class="col text-center">
+		<a class="btn btn-primary mt-3" style="width: 10em" href="/deposit">Deposit</a>
 
-					{% if not total_balance_sats == '0'  %}
-					<a class="btn btn-outline-primary mt-3 ms-2" style="width: 10em" href="/withdraw">Withdraw</a>
-					<br/>
-					{% endif %}
+		{% if not total_balance_sats == '0'  %}
+		<a class="btn btn-outline-primary mt-3 ms-2" style="width: 10em" href="/withdraw">Withdraw</a>
+		<br/>
+		{% endif %}
 
-					{% if sufficient_balance_yg %}
-						{% if yg_running %}
-						<a class="btn btn-warning mt-3 me-1 position-relative" style="width: 10em" href="/yg" data-bs-toggle="tooltip" data-bs-placement="top" title="Running">
-							Yield Generator
-							<span class="position-absolute top-0 start-100 translate-middle p-2 badge rounded-circle bg-success">
-							</span>
-						</a>
-						{% else %}
-						<a class="btn btn-warning mt-3 me-1 position-relative" style="width: 10em" href="/yg" data-bs-toggle="tooltip" data-bs-placement="top" title="Stopped">
-							Yield Generator
-							<span class="position-absolute top-0 start-100 translate-middle p-2 badge rounded-circle bg-secondary">
-							</span>
-						</a>
-						{% endif %}
-						{% if coinjoin_running %}
-						<a href="/coinjoin" class="btn btn-outline-warning mt-3 ms-1" style="width: 10em;" data-bs-toggle="tooltip" data-bs-placement="top" title="Running">
-							Coinjoin
-							<span class="position-absolute top-0 start-100 translate-middle p-2 badge rounded-circle bg-danger">
-							</span>
-						</a>
-						{% else %}
-						<a href="/coinjoin" class="btn btn-outline-warning mt-3 ms-1" style="width: 10em;">Coinjoin</a>
-						{% endif %}
-					{% endif %}
-					<br/>
-					<a class="btn btn-outline-danger mt-3 me-1" style="width: 10em" href="/seedphrase">Seedphrase</a>
-					<a class="btn btn-outline-danger mt-3 ms-1" style="width: 10em" href="/settings">Settings</a>
-					<br/>
-					<a class="btn btn-danger mt-3" style="width: 10em" href="/lock">Lock</a>
-				</div>
-			</div>
-			{% include 'includes/footer.html' %}
-		</div>
+		{% if sufficient_balance_yg %}
+			{% if yg_running %}
+			<a class="btn btn-warning mt-3 me-1 position-relative" style="width: 10em" href="/yg" data-bs-toggle="tooltip" data-bs-placement="top" title="Running">
+				Yield Generator
+				<span class="position-absolute top-0 start-100 translate-middle p-2 badge rounded-circle bg-success">
+				</span>
+			</a>
+			{% else %}
+			<a class="btn btn-warning mt-3 me-1 position-relative" style="width: 10em" href="/yg" data-bs-toggle="tooltip" data-bs-placement="top" title="Stopped">
+				Yield Generator
+				<span class="position-absolute top-0 start-100 translate-middle p-2 badge rounded-circle bg-secondary">
+				</span>
+			</a>
+			{% endif %}
+			{% if coinjoin_running %}
+			<a href="/coinjoin" class="btn btn-outline-warning mt-3 ms-1" style="width: 10em;" data-bs-toggle="tooltip" data-bs-placement="top" title="Running">
+				Coinjoin
+				<span class="position-absolute top-0 start-100 translate-middle p-2 badge rounded-circle bg-danger">
+				</span>
+			</a>
+			{% else %}
+			<a href="/coinjoin" class="btn btn-outline-warning mt-3 ms-1" style="width: 10em;">Coinjoin</a>
+			{% endif %}
+		{% endif %}
+		<br/>
+		<a class="btn btn-outline-danger mt-3 me-1" style="width: 10em" href="/seedphrase">Seedphrase</a>
+		<a class="btn btn-outline-danger mt-3 ms-1" style="width: 10em" href="/settings">Settings</a>
+		<br/>
+		<a class="btn btn-danger mt-3" style="width: 10em" href="/lock">Lock</a>
+	</div>
+</div>
+{% endblock %}
 
-
-		<!-- Optional JavaScript; choose one of the two! -->
-
-		<!-- Option 1: Bootstrap Bundle with Popper -->
-		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
-
-		<!-- Option 2: Separate Popper and Bootstrap JS -->
-		<!--
-		<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
-		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
-		-->
-		<script type="text/javascript">
-			var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-			var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-				return new bootstrap.Tooltip(tooltipTriggerEl)
-			});
-		</script>
-	</body>
-</html>
+{% block script %}
+{{ super() }}
+<script type="text/javascript">
+	var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+	var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+		return new bootstrap.Tooltip(tooltipTriggerEl)
+	});
+</script>
+{% endblock %}
