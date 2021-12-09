@@ -1,5 +1,12 @@
 {% extends 'layout.html' %}
 {% block title %}Deposit{% endblock %}
+
+{% block style %}
+{{ super() }}
+<!-- Custom CSS -->
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='deposit.css') }}">
+{% endblock %}
+
 {% block content %}
 <h2 class="text-center mb-1">Deposit</h2>
 <div class="row">
