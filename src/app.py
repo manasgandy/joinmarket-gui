@@ -8,7 +8,7 @@ import qrcode
 app = Flask(__name__)
 app.secret_key = b'joinmarket-gui'
 
-API_IP = "localhost"
+API_IP = os.environ['JM_WALLET_IP']
 API_PORT = 28183
 API_URL = "https://" + API_IP + ":" + str(API_PORT) + "/api/v1"
 
