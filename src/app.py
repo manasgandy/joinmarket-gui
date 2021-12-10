@@ -8,7 +8,7 @@ import qrcode
 app = Flask(__name__)
 app.secret_key = b'joinmarket-gui'
 
-API_IP = "10.0.0.4"
+API_IP = "localhost"
 API_PORT = 28183
 API_URL = "https://" + API_IP + ":" + str(API_PORT) + "/api/v1"
 
@@ -402,3 +402,6 @@ def settings():
 			for field in fields:
 				settingsData[section][field] = getSetting(section, field)
 	return render_template('settings.html', **settingsData)
+
+if __name__ == "__main__":
+	app.run(host='0.0.0.0', port=5000)
