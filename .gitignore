@@ -1,3 +1,4 @@
 *.dat
 .DS_Store
 __pycache__
+jmg_venv
