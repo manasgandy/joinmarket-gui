@@ -6,12 +6,12 @@
 
 ## How to install
 
-- Install Python 3.6 or higher
-- `pip install Flask Image qrcode requests`
-- `cd src`
-- (optional) change the IP of the joinmarket API if not running on the same computer in `src/app.py`
-- `export FLASK_APP=app`
-- `flask run`
+- Install Python 3.6 or higher ([python.org](https://www.python.org/downloads/))
+- Create a virtual environment: `python3 -m venv jmg_venv`
+- Activate the virtual environment: `source jmg_venv/bin/activate`
+- Install the dependencies: `pip install -r requirements.txt`
+- Set the environment variable to the IP address of JoinMarket wallet daemon: `export JM_WALLET_IP=<IP_ADDRESS>`
+- Launch the application: `python src/app.py`
 
 ## Donate
 
