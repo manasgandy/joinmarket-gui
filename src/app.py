@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request, send_file, flash
+from flask import Flask, render_template, redirect, url_for, request, send_file, flash, session
 import requests as req
 import os
 import logging
@@ -8,42 +8,20 @@ import qrcode
 app = Flask(__name__)
 app.secret_key = b'joinmarket-gui'
 
-API_IP = "localhost"
+API_IP = "10.0.0.4"
 API_PORT = 28183
 API_URL = "https://" + API_IP + ":" + str(API_PORT) + "/api/v1"
 
 MINSIZE = 100000
 
 def get_token():
-	f = open("token.dat", "r")
-	token = f.read()
-	f.close()
-	return token
+	return session['token']
 
 def set_token(token):
-	f = open("token.dat", "w")
-	f.write(token)
-	f.close()
+	session['token'] = token
 
 def delete_token():
-	os.remove('token.dat')
-
-def save_seedphrase(seedphrase):
-	f = open('seed.dat', 'w')
-	f.write(seedphrase)
-	f.close()
-
-def get_seedphrase():
-	f = open('seed.dat', 'r')
-	seedphrase = f.read()
-	f.close()
-	return seedphrase
-
-def delete_seedphrase():
-	try:
-		os.remove('seed.dat')
-	except:
-		pass
+	session.pop('token', None)
 
 def comma_seperated_sats(balance):
 	balance_str = str(balance)
@@ -159,10 +137,8 @@ def create():
 		}
 		r = req.post(API_URL + '/wallet/create', json=walletJSON, verify=False)
 		if r.status_code == 200:
-			seedphrase = r.json()['seedphrase']
 			token = r.json()['token']
 			set_token(token)
-			save_seedphrase(seedphrase)
 			flash("Wallet created successfully!", category="success")
 			return redirect(url_for('balance'))
 
@@ -210,7 +186,6 @@ def lock():
 		r = req.get(API_URL + '/wallet/'+walletName+'/lock', headers=authHeader, verify=False)
 		if r.status_code == 200:
 			delete_token()
-			delete_seedphrase()
 			flash('Wallet locked!', category="success")
 			return redirect(url_for('unlock'))
 		else:
@@ -367,19 +342,6 @@ def get_qr_code():
 	img.save(img_buf)
 	img_buf.seek(0)
 	return send_file(img_buf, mimetype='image/png')
-
-# TODO: retrieve and save seed if not present (needs showseed API call)
-@app.route("/seedphrase")
-def seedphrase():
-	try:
-		templateData = {
-			'wallet_unlocked': True,
-			'seedphrase': get_seedphrase().split(' ')
-		}
-		return render_template('seed.html', **templateData)
-	except:
-		flash("Seed can't be retrieved!", category="danger")
-		return redirect(url_for("balance"))
 
 @app.route("/settings", methods=['GET', 'POST'])
 def settings():
