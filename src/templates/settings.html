@@ -18,23 +18,23 @@
 		<form action="/settings" method="POST">
 			<h3>BLOCKCHAIN</h3>
 			<label class="form-label">RPC Host</label>
-			<input type="text" name="BLOCKCHAIN.rpc_host" class="form-control mb-3" required value="{{ BLOCKCHAIN['rpc_host'] }}">
+			<input type="text" name="BLOCKCHAIN.rpc_host" class="form-control mb-3" required value="{{ settings.BLOCKCHAIN.rpc_host }}">
 
 			<label class="form-label">RPC Port</label>
-			<input type="text" name="BLOCKCHAIN.rpc_port" class="form-control mb-3" required value="{{ BLOCKCHAIN['rpc_port'] }}">
+			<input type="text" name="BLOCKCHAIN.rpc_port" class="form-control mb-3" required value="{{ settings.BLOCKCHAIN.rpc_port }}">
 
 			<label class="form-label">RPC User</label>
-			<input type="text" name="BLOCKCHAIN.rpc_user" class="form-control mb-3" required value="{{ BLOCKCHAIN['rpc_user'] }}">
+			<input type="text" name="BLOCKCHAIN.rpc_user" class="form-control mb-3" required value="{{ settings.BLOCKCHAIN.rpc_user }}">
 
 			<label class="form-label">RPC Password</label>
-			<input type="text" name="BLOCKCHAIN.rpc_password" class="form-control mb-3" required value="{{ BLOCKCHAIN['rpc_password'] }}">
+			<input type="text" name="BLOCKCHAIN.rpc_password" class="form-control mb-3" required value="{{ settings.BLOCKCHAIN.rpc_password }}">
 
 			<label class="form-label">RPC wallet file</label>
-			<input type="text" name="BLOCKCHAIN.rpc_wallet_file" class="form-control mb-3" required value="{{ BLOCKCHAIN['rpc_wallet_file'] }}">
+			<input type="text" name="BLOCKCHAIN.rpc_wallet_file" class="form-control mb-3" required value="{{ settings.BLOCKCHAIN.rpc_wallet_file }}">
 
 			<h3>POLICY</h3>
 			<label class="form-label">Transaction fees</label>
-			<input type="text" name="POLICY.tx_fees" class="form-control mb-3" required value="{{ POLICY['tx_fees'] }}">
+			<input type="text" name="POLICY.tx_fees" class="form-control mb-3" required value="{{ settings.POLICY.tx_fees }}">
 			
 			<button type="submit" class="btn btn-primary" style="width: 100%">Save settings</button>
 		</form>

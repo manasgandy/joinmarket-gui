@@ -345,25 +345,35 @@ def get_qr_code():
 
 @app.route("/settings", methods=['GET', 'POST'])
 def settings():
-	settingsDict = {
-		# 'DAEMON': ['no_daemon', 'daemon_port', 'daemon_host', 'use_ssl'],
-		'BLOCKCHAIN': ['rpc_host', 'rpc_port', 'rpc_user', 'rpc_password', 'rpc_wallet_file'],
-		'POLICY': ['tx_fees']
-	}
-	settingsData = {}
-	if request.method == 'GET':
-		# populate settingsData dictionary
-		for section, fields in settingsDict.items():
-			settingsData[section] = {}
-			for field in fields:
-				settingsData[section][field] = getSetting(section, field)
-	else: # POST request method
-		setSettings(request.form)
-		for section, fields in settingsDict.items():
-			settingsData[section] = {}
-			for field in fields:
-				settingsData[section][field] = getSetting(section, field)
-	return render_template('settings.html', **settingsData)
+	try:
+		settingsDict = {
+			# 'DAEMON': ['no_daemon', 'daemon_port', 'daemon_host', 'use_ssl'],
+			'BLOCKCHAIN': ['rpc_host', 'rpc_port', 'rpc_user', 'rpc_password', 'rpc_wallet_file'],
+			'POLICY': ['tx_fees']
+		}
+		settingsData = {}
+		if request.method == 'GET':
+			# populate settingsData dictionary
+			for section, fields in settingsDict.items():
+				settingsData[section] = {}
+				for field in fields:
+					settingsData[section][field] = getSetting(section, field)
+		else: # POST request method
+			setSettings(request.form)
+			for section, fields in settingsDict.items():
+				settingsData[section] = {}
+				for field in fields:
+					settingsData[section][field] = getSetting(section, field)
+		templateData = {
+			'settings': settingsData,
+			'wallet_unlocked': True
+		}
+		return render_template('settings.html', **templateData)
+	except:
+		templateData = {
+			"error": "Either you're not logged in or the backend is down. Check logs at " + API_IP
+		}
+		return render_template('error.html', **templateData)
 
 if __name__ == "__main__":
 	app.run(host='0.0.0.0', port=5002)
