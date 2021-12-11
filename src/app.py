@@ -77,6 +77,13 @@ def is_wallet_locked():
 	r = req.get(API_URL + '/session', verify=False).json()
 	return r['wallet_name'] == 'None'
 
+def is_token_present():
+	try:
+		app.logger.info(session['token'])
+		return session['token'] != None
+	except:
+		return False
+
 @app.route("/")
 def index_page():
 	if is_backend_down():
@@ -84,8 +91,13 @@ def index_page():
 	
 	if is_wallet_locked():
 		return redirect(url_for('unlock'))
-	else:
+	elif is_token_present():
 		return redirect(url_for('balance'))
+	else:
+		templateData = {
+			'error': 'Session token missing. Joinmarket GUI is already open from another browser.'
+		}
+		return render_template('error.html', **templateData)
 
 
 @app.route("/unlock", methods=['GET', 'POST'])
@@ -159,6 +171,12 @@ def balance():
 	if is_wallet_locked():
 		return redirect(url_for('unlock'))
 
+	if not is_token_present():
+		templateData = {
+			'error': 'Session token missing. Joinmarket GUI is already open from another browser.'
+		}
+		return render_template('error.html', **templateData)
+
 	r = req.get(API_URL + '/session', verify=False).json()
 	walletName = r['wallet_name']
 	makerRunning = r['maker_running']
@@ -213,6 +231,12 @@ def deposit(address=None):
 	if is_wallet_locked():
 		return redirect(url_for('unlock'))
 
+	if not is_token_present():
+		templateData = {
+			'error': 'Session token missing. Joinmarket GUI is already open from another browser.'
+		}
+		return render_template('error.html', **templateData)
+
 	if address == None:
 		r = req.get(API_URL + '/session', verify=False).json()
 		walletName = r['wallet_name']
@@ -238,6 +262,12 @@ def withdraw():
 	if is_backend_down():
 		return render_template('error.html')
 
+	if not is_token_present():
+		templateData = {
+			'error': 'Session token missing. Joinmarket GUI is already open from another browser.'
+		}
+		return render_template('error.html', **templateData)
+
 	if request.method == 'GET':
 		if is_wallet_locked():
 			return redirect(url_for('unlock'))
@@ -260,7 +290,6 @@ def withdraw():
 			flash("Error withdrawing funds. Error code: " + str(r.status_code), category="danger")
 			return render_template("withdraw.html")
 
-
 @app.route("/yg")
 def yg():
 	if is_backend_down():
@@ -268,6 +297,12 @@ def yg():
 
 	if is_wallet_locked():
 		return redirect(url_for('unlock'))
+
+	if not is_token_present():
+		templateData = {
+			'error': 'Session token missing. Joinmarket GUI is already open from another browser.'
+		}
+		return render_template('error.html', **templateData)
 
 	r = req.get(API_URL + '/session', verify=False).json()
 	walletName = r['wallet_name']
@@ -342,6 +377,12 @@ def coinjoin():
 	if is_backend_down():
 		return render_template('error.html')
 
+	if not is_token_present():
+		templateData = {
+			'error': 'Session token missing. Joinmarket GUI is already open from another browser.'
+		}
+		return render_template('error.html', **templateData)
+
 	if request.method == 'GET':
 		if is_wallet_locked():
 			return redirect(url_for('unlock'))
@@ -383,6 +424,12 @@ def settings():
 
 	if is_wallet_locked():
 		return redirect(url_for('unlock'))
+
+	if not is_token_present():
+		templateData = {
+			'error': 'Session token missing. Joinmarket GUI is already open from another browser.'
+		}
+		return render_template('error.html', **templateData)
 
 	settingsDict = {
 		# 'DAEMON': ['no_daemon', 'daemon_port', 'daemon_host', 'use_ssl'],
