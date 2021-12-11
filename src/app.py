@@ -8,7 +8,11 @@ import qrcode
 app = Flask(__name__)
 app.secret_key = b'joinmarket-gui'
 
-API_IP = os.environ['JM_WALLET_IP']
+try:
+	API_IP = os.environ['JM_WALLET_IP']
+except:
+	API_IP = '0.0.0.0'
+
 API_PORT = 28183
 API_URL = "https://" + API_IP + ":" + str(API_PORT) + "/api/v1"
 
@@ -70,8 +74,12 @@ def setSettings(form):
 		r = req.post(API_URL + '/wallet/'+walletName+'/configset', json=settingsJSON, headers=authHeader, verify=False)
 
 def is_backend_down():
-	r = req.get(API_URL + '/wallet/all', verify=False)
-	return r.status_code != 200
+	try:
+		r = req.get(API_URL + '/wallet/all', verify=False)
+		return r.status_code != 200
+	except:
+		return True
+
 
 def is_wallet_locked():
 	r = req.get(API_URL + '/session', verify=False).json()
