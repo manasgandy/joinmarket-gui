@@ -69,43 +69,46 @@ def setSettings(form):
 		}
 		r = req.post(API_URL + '/wallet/'+walletName+'/configset', json=settingsJSON, headers=authHeader, verify=False)
 
+def is_backend_down():
+	r = req.get(API_URL + '/wallet/all', verify=False)
+	return r.status_code != 200
+
+def is_wallet_locked():
+	r = req.get(API_URL + '/session', verify=False).json()
+	return r['wallet_name'] == 'None'
 
 @app.route("/")
 def index_page():
-	try:
-		r = req.get(API_URL + '/session', verify=False).json()
-		if r['wallet_name'] == "None":
-			return redirect(url_for('unlock'))
-		else:
-			return redirect(url_for('balance'))
-	except:
-		templateData = {
-			"error": "Can't connect to Joinmarket backend. Check " + API_IP
-		}
-		return render_template('error.html', **templateData)
+	if is_backend_down():
+		return render_template('error.html')
+	
+	if is_wallet_locked():
+		return redirect(url_for('unlock'))
+	else:
+		return redirect(url_for('balance'))
 
 
 @app.route("/unlock", methods=['GET', 'POST'])
 def unlock():
+	if is_backend_down():
+		return render_template('error.html')
+
 	if request.method == 'GET':
-		try:
-			# get list of wallets from Joinmarket
-			r = req.get(API_URL + '/wallet/all', verify=False)
-			listWallets = r.json()['wallets']
-			if listWallets == []:
-				return redirect(url_for('create'))
-			# prepare template data dictionary
-			templateData = {
-				'wallet_unlocked': False,
-				'wallets': listWallets
-			}
-			# render unlock page with list of wallets in <select>
-			return render_template('unlock.html', **templateData)
-		except:
-			templateData = {
-				"error": "Can't connect to Joinmarket backend. Check " + API_IP
-			}
-			return render_template('error.html', **templateData)
+		if not is_wallet_locked():
+			return redirect(url_for('balance'))
+		
+		# get list of wallets from Joinmarket
+		r = req.get(API_URL + '/wallet/all', verify=False)
+		listWallets = r.json()['wallets']
+		if listWallets == []:
+			return redirect(url_for('create'))
+		# prepare template data dictionary
+		templateData = {
+			'wallet_unlocked': False,
+			'wallets': listWallets
+		}
+		# render unlock page with list of wallets in <select>
+		return render_template('unlock.html', **templateData)
 	else:
 		# POST request to unlock wallet
 		walletName = request.form['walletname']
@@ -127,8 +130,14 @@ def unlock():
 
 @app.route("/create", methods=['GET', 'POST'])
 def create():
+	if is_backend_down():
+		return render_template('error.html')
+
 	if request.method == 'GET':
-		return render_template('create.html')
+		if is_wallet_locked():
+			return render_template('create.html')
+		return redirect(url_for('index_page'))
+
 	else: # handle POST request
 		walletJSON = {
 			'walletname': request.form['walletname'],
@@ -144,60 +153,66 @@ def create():
 
 @app.route("/balance")
 def balance():
-	try:
-		r = req.get(API_URL + '/session', verify=False).json()
-		walletName = r['wallet_name']
-		makerRunning = r['maker_running']
-		coinjoinRunning = r['coinjoin_in_process']
+	if is_backend_down():
+		return render_template('error.html')
 
-		authHeader = {'Authorization': 'Bearer ' + get_token()}
-		r = req.get(API_URL + '/wallet/'+walletName+'/display', headers=authHeader, verify=False)
+	if is_wallet_locked():
+		return redirect(url_for('unlock'))
 
-		if r.status_code == 200:
-			walletInfo = r.json()['walletinfo']
-			total_balance_sats = round(float(walletInfo['total_balance'])*1e8)
-			mixdepth_balance_sats = []
-			for i in range(5):
-				balance = comma_seperated_sats(round(float(walletInfo['accounts'][i]['account_balance'])*1e8))
-				mixdepth_balance_sats.append(balance)
-			templateData = {
-				'wallet_unlocked': True,
-				'total_balance_sats': comma_seperated_sats(total_balance_sats),
-				'mixdepth_balance_sats': mixdepth_balance_sats,
-				'sufficient_balance_yg': total_balance_sats >= MINSIZE,
-				'yg_running': makerRunning,
-				'coinjoin_running': coinjoinRunning,
-			}
-			return render_template('balance.html', **templateData)
-		else:
-			return r.json()
-	except:
+	r = req.get(API_URL + '/session', verify=False).json()
+	walletName = r['wallet_name']
+	makerRunning = r['maker_running']
+	coinjoinRunning = r['coinjoin_in_process']
+
+	authHeader = {'Authorization': 'Bearer ' + get_token()}
+	r = req.get(API_URL + '/wallet/'+walletName+'/display', headers=authHeader, verify=False)
+
+	if r.status_code == 200:
+		walletInfo = r.json()['walletinfo']
+		total_balance_sats = round(float(walletInfo['total_balance'])*1e8)
+		mixdepth_balance_sats = []
+		for i in range(5):
+			balance = comma_seperated_sats(round(float(walletInfo['accounts'][i]['account_balance'])*1e8))
+			mixdepth_balance_sats.append(balance)
 		templateData = {
-			"error": "Can't connect to Joinmarket backend. Check " + API_IP
+			'wallet_unlocked': True,
+			'total_balance_sats': comma_seperated_sats(total_balance_sats),
+			'mixdepth_balance_sats': mixdepth_balance_sats,
+			'sufficient_balance_yg': total_balance_sats >= MINSIZE,
+			'yg_running': makerRunning,
+			'coinjoin_running': coinjoinRunning,
 		}
-		return render_template('error.html', **templateData)
+		return render_template('balance.html', **templateData)
+	else:
+		return r.json()
 
 @app.route("/lock")
 def lock():
-	try:
-		r = req.get(API_URL + '/session', verify=False).json()
-		walletName = r['wallet_name']
-		authHeader = {'Authorization': 'Bearer ' + get_token()}
-		r = req.get(API_URL + '/wallet/'+walletName+'/lock', headers=authHeader, verify=False)
-		if r.status_code == 200:
-			delete_token()
-			flash('Wallet locked!', category="success")
-			return redirect(url_for('unlock'))
-		else:
-			return redirect(url_for('balance'))
-	except:
-		templateData = {
-			"error": "Can't connect to Joinmarket backend. Check " + API_IP
-		}
-		return render_template('error.html', **templateData)
+	if is_backend_down():
+		return render_template('error.html')
+
+	if is_wallet_locked():
+		return redirect(url_for('unlock'))
+
+	r = req.get(API_URL + '/session', verify=False).json()
+	walletName = r['wallet_name']
+	authHeader = {'Authorization': 'Bearer ' + get_token()}
+	r = req.get(API_URL + '/wallet/'+walletName+'/lock', headers=authHeader, verify=False)
+	if r.status_code == 200:
+		delete_token()
+		flash('Wallet locked!', category="success")
+		return redirect(url_for('unlock'))
+	else:
+		return redirect(url_for('balance'))
 
 @app.route("/deposit")
 def deposit(address=None):
+	if is_backend_down():
+		return render_template('error.html')
+
+	if is_wallet_locked():
+		return redirect(url_for('unlock'))
+
 	if address == None:
 		r = req.get(API_URL + '/session', verify=False).json()
 		walletName = r['wallet_name']
@@ -220,7 +235,13 @@ def deposit(address=None):
 
 @app.route("/withdraw", methods=['GET', 'POST'])
 def withdraw():
+	if is_backend_down():
+		return render_template('error.html')
+
 	if request.method == 'GET':
+		if is_wallet_locked():
+			return redirect(url_for('unlock'))
+
 		templateData = {
 			'wallet_unlocked': True
 		}
@@ -242,6 +263,12 @@ def withdraw():
 
 @app.route("/yg")
 def yg():
+	if is_backend_down():
+		return render_template('error.html')
+
+	if is_wallet_locked():
+		return redirect(url_for('unlock'))
+
 	r = req.get(API_URL + '/session', verify=False).json()
 	walletName = r['wallet_name']
 	makerRunning = r['maker_running']
@@ -312,7 +339,13 @@ def stopYG():
 
 @app.route("/coinjoin", methods=['GET', 'POST'])
 def coinjoin():
+	if is_backend_down():
+		return render_template('error.html')
+
 	if request.method == 'GET':
+		if is_wallet_locked():
+			return redirect(url_for('unlock'))
+		
 		templateData = {
 			'wallet_unlocked': True,	
 		}
@@ -345,35 +378,39 @@ def get_qr_code():
 
 @app.route("/settings", methods=['GET', 'POST'])
 def settings():
-	try:
-		settingsDict = {
-			# 'DAEMON': ['no_daemon', 'daemon_port', 'daemon_host', 'use_ssl'],
-			'BLOCKCHAIN': ['rpc_host', 'rpc_port', 'rpc_user', 'rpc_password', 'rpc_wallet_file'],
-			'POLICY': ['tx_fees']
-		}
-		settingsData = {}
-		if request.method == 'GET':
-			# populate settingsData dictionary
-			for section, fields in settingsDict.items():
-				settingsData[section] = {}
-				for field in fields:
-					settingsData[section][field] = getSetting(section, field)
-		else: # POST request method
-			setSettings(request.form)
-			for section, fields in settingsDict.items():
-				settingsData[section] = {}
-				for field in fields:
-					settingsData[section][field] = getSetting(section, field)
-		templateData = {
-			'settings': settingsData,
-			'wallet_unlocked': True
-		}
-		return render_template('settings.html', **templateData)
-	except:
-		templateData = {
-			"error": "Either you're not logged in or the backend is down. Check logs at " + API_IP
-		}
-		return render_template('error.html', **templateData)
+	if is_backend_down():
+		return render_template('error.html')
+
+	if is_wallet_locked():
+		return redirect(url_for('unlock'))
+
+	settingsDict = {
+		# 'DAEMON': ['no_daemon', 'daemon_port', 'daemon_host', 'use_ssl'],
+		'BLOCKCHAIN': ['rpc_host', 'rpc_port', 'rpc_user', 'rpc_password', 'rpc_wallet_file'],
+		'POLICY': ['tx_fees']
+	}
+	settingsData = {}
+	if request.method == 'GET':
+		# populate settingsData dictionary
+		for section, fields in settingsDict.items():
+			settingsData[section] = {}
+			for field in fields:
+				settingsData[section][field] = getSetting(section, field)
+	else: # POST request method
+		setSettings(request.form)
+		for section, fields in settingsDict.items():
+			settingsData[section] = {}
+			for field in fields:
+				settingsData[section][field] = getSetting(section, field)
+	templateData = {
+		'settings': settingsData,
+		'wallet_unlocked': True
+	}
+	return render_template('settings.html', **templateData)
+
+@app.errorhandler(404)
+def not_found(e):
+	return render_template('404.html')
 
 if __name__ == "__main__":
 	app.run(host='0.0.0.0', port=5002)

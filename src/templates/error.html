@@ -14,7 +14,11 @@
 </div>
 <div class="row">
 	<div class="col text-center">
-		<div class="alert alert-danger" role="alert">{{error}}</div>
+		{% if error %}
+			<div class="alert alert-danger" role="alert">{{error}}</div>
+		{% else %}
+			<div class="alert alert-danger" role="alert">Joinmarket daemon is down.</div>
+		{% endif %}
 	</div>
 </div>
 {% endblock %}
