@@ -6,7 +6,22 @@
 
 ## How to install
 
+### Install Bitcoin core
+- Install and run a Bitcoin core node ([bitcoincore.org](https://bitcoincore.org/en/download/))
+- Configure Bitcoin RPC server
+
+### Install JoinMarket or Joininbox
+- [Joinmarket](https://github.com/JoinMarket-Org/joinmarket-clientserver)
+- [JoininBox](https://github.com/openoms/joininbox)
+- Configure SSL certificate
+	- `mkdir ~/.joinmarket/ssl`
+	- `openssl req -newkey rsa:4096 -x509 -sha256 -days 3650 -nodes -out ~/.joinmarket/ssl/cert.pem -keyout ~/.joinmarket/ssl/key.pem`
+- Run wallet daemon: `python scripts/jmwalletd.py`
+
+## Install Joinmarket-GUI (JMG)
 - Install Python 3.6 or higher ([python.org](https://www.python.org/downloads/))
+- Clone this repository or download the latest release and unpack
+- Enter the directory: `cd joinmarket-gui`
 - Create a virtual environment: `python3 -m venv jmg_venv`
 - Activate the virtual environment: `source jmg_venv/bin/activate`
 - Install the dependencies: `pip install -r requirements.txt`
