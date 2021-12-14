@@ -463,6 +463,41 @@ def settings():
 	}
 	return render_template('settings.html', **templateData)
 
+@app.route("/showseed")
+def showseed():
+	if is_backend_down():
+		return render_template('error.html')
+
+	if is_wallet_locked():
+		return redirect(url_for('unlock'))
+
+	if not is_token_present():
+		templateData = {
+			'error': 'Session token missing. Joinmarket GUI is already open from another browser.'
+		}
+		return render_template('error.html', **templateData)
+
+	r = req.get(API_URL + '/session', verify=False).json()
+	walletName = r['wallet_name']
+	url = API_URL + '/wallet/' + walletName + '/showseed'
+	authHeader = {'Authorization': 'Bearer ' + get_token()}
+	r = req.get(url, headers=authHeader, verify=False)
+	respText = r.json()['seedphrase']
+
+	seedphrase = respText.split('\n')[2].split(' ')
+	seedextension = None
+	try:
+		seedextension = respText.split('\n')[4].split(':')[1].strip()
+	except:
+		pass
+
+	templateData = {
+		'seedphrase': seedphrase,
+		'extension': seedextension,
+		'wallet_unlocked': True
+	}
+	return render_template('seed.html', **templateData)
+
 @app.errorhandler(404)
 def not_found(e):
 	return render_template('404.html')
