@@ -479,21 +479,12 @@ def showseed():
 
 	r = req.get(API_URL + '/session', verify=False).json()
 	walletName = r['wallet_name']
-	url = API_URL + '/wallet/' + walletName + '/showseed'
+	url = API_URL + '/wallet/' + walletName + '/getseed'
 	authHeader = {'Authorization': 'Bearer ' + get_token()}
 	r = req.get(url, headers=authHeader, verify=False)
-	respText = r.json()['seedphrase']
-
-	seedphrase = respText.split('\n')[2].split(' ')
-	seedextension = None
-	try:
-		seedextension = respText.split('\n')[4].split(':')[1].strip()
-	except:
-		pass
-
+	seedphrase = r.json()['seedphrase'].split()
 	templateData = {
 		'seedphrase': seedphrase,
-		'extension': seedextension,
 		'wallet_unlocked': True
 	}
 	return render_template('seed.html', **templateData)
