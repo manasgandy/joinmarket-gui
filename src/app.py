@@ -11,7 +11,12 @@ app.secret_key = b'joinmarket-gui'
 try:
 	API_IP = os.environ['JM_WALLET_IP']
 except:
-	API_IP = '0.0.0.0'
+	API_IP = 'localhost'
+
+try:
+	CERT = os.environ['SSL_CERT']
+except:
+	CERT = False
 
 API_PORT = 28183
 API_URL = "https://" + API_IP + ":" + str(API_PORT) + "/api/v1"
@@ -49,19 +54,19 @@ def generate_qr_code(url):
 	return img
 
 def getSetting(section, field):
-	r = req.get(API_URL + '/session', verify=False).json()
+	r = req.get(API_URL + '/session', verify=CERT).json()
 	walletName = r['wallet_name']
 	url = API_URL + '/wallet/' + walletName + '/configget'
 	authHeader = {'Authorization': 'Bearer ' + get_token()}
 	configJSON = {'section': section, 'field': field}
-	r = req.post(url, json=configJSON, headers=authHeader, verify=False)
+	r = req.post(url, json=configJSON, headers=authHeader, verify=CERT)
 	return r.json()['configvalue']
 
 def setSettings(form):
 	for entry, value in form.items():
 		# app.logger.info('Entry: %s, value: %s', entry, value)
 		section, field = entry.split('.')
-		r = req.get(API_URL + '/session', verify=False).json()
+		r = req.get(API_URL + '/session', verify=CERT).json()
 		walletName = r['wallet_name']
 
 		authHeader = {'Authorization': 'Bearer ' + get_token()}
@@ -71,23 +76,23 @@ def setSettings(form):
 			'field': field,
 			'value': value
 		}
-		r = req.post(API_URL + '/wallet/'+walletName+'/configset', json=settingsJSON, headers=authHeader, verify=False)
+		r = req.post(API_URL + '/wallet/'+walletName+'/configset', json=settingsJSON, headers=authHeader, verify=CERT)
 
 def is_backend_down():
 	try:
-		r = req.get(API_URL + '/wallet/all', verify=False)
+		r = req.get(API_URL + '/wallet/all', verify=CERT)
 		return r.status_code != 200
 	except:
 		return True
 
 
 def is_wallet_locked():
-	r = req.get(API_URL + '/session', verify=False).json()
+	r = req.get(API_URL + '/session', verify=CERT).json()
 	return r['wallet_name'] == 'None'
 
 def is_token_present():
 	try:
-		app.logger.info(session['token'])
+		# app.logger.info(session['token'])
 		return session['token'] != None
 	except:
 		return False
@@ -118,7 +123,7 @@ def unlock():
 			return redirect(url_for('balance'))
 		
 		# get list of wallets from Joinmarket
-		r = req.get(API_URL + '/wallet/all', verify=False)
+		r = req.get(API_URL + '/wallet/all', verify=CERT)
 		listWallets = r.json()['wallets']
 		if listWallets == []:
 			return redirect(url_for('create'))
@@ -133,12 +138,12 @@ def unlock():
 		# POST request to unlock wallet
 		walletName = request.form['walletname']
 		passwordJSON = {'password': request.form['password']}
-		r = req.post(API_URL + '/wallet/' + walletName + '/unlock', json=passwordJSON, verify=False)
+		r = req.post(API_URL + '/wallet/' + walletName + '/unlock', json=passwordJSON, verify=CERT)
 		if r.status_code == 200:
 			# save the TOKEN
 			set_token(r.json()['token'])
 			# confirm the session is unlocked
-			r = req.get(API_URL + '/session', verify=False).json()
+			r = req.get(API_URL + '/session', verify=CERT).json()
 			assert(walletName == r['wallet_name'])
 			# flash success alert
 			flash("Wallet unlocked successfully!", category="success")
@@ -164,7 +169,7 @@ def create():
 			'password': request.form['password'],
 			'wallettype': request.form['wallettype']
 		}
-		r = req.post(API_URL + '/wallet/create', json=walletJSON, verify=False)
+		r = req.post(API_URL + '/wallet/create', json=walletJSON, verify=CERT)
 		if r.status_code == 200:
 			token = r.json()['token']
 			set_token(token)
@@ -185,13 +190,13 @@ def balance():
 		}
 		return render_template('error.html', **templateData)
 
-	r = req.get(API_URL + '/session', verify=False).json()
+	r = req.get(API_URL + '/session', verify=CERT).json()
 	walletName = r['wallet_name']
 	makerRunning = r['maker_running']
 	coinjoinRunning = r['coinjoin_in_process']
 
 	authHeader = {'Authorization': 'Bearer ' + get_token()}
-	r = req.get(API_URL + '/wallet/'+walletName+'/display', headers=authHeader, verify=False)
+	r = req.get(API_URL + '/wallet/'+walletName+'/display', headers=authHeader, verify=CERT)
 
 	if r.status_code == 200:
 		walletInfo = r.json()['walletinfo']
@@ -220,10 +225,10 @@ def lock():
 	if is_wallet_locked():
 		return redirect(url_for('unlock'))
 
-	r = req.get(API_URL + '/session', verify=False).json()
+	r = req.get(API_URL + '/session', verify=CERT).json()
 	walletName = r['wallet_name']
 	authHeader = {'Authorization': 'Bearer ' + get_token()}
-	r = req.get(API_URL + '/wallet/'+walletName+'/lock', headers=authHeader, verify=False)
+	r = req.get(API_URL + '/wallet/'+walletName+'/lock', headers=authHeader, verify=CERT)
 	if r.status_code == 200:
 		delete_token()
 		flash('Wallet locked!', category="success")
@@ -246,10 +251,10 @@ def deposit(address=None):
 		return render_template('error.html', **templateData)
 
 	if address == None:
-		r = req.get(API_URL + '/session', verify=False).json()
+		r = req.get(API_URL + '/session', verify=CERT).json()
 		walletName = r['wallet_name']
 		authHeader = {'Authorization': 'Bearer ' + get_token()}
-		r = req.get(API_URL + '/wallet/'+walletName+'/address/new/0', headers=authHeader, verify=False)
+		r = req.get(API_URL + '/wallet/'+walletName+'/address/new/0', headers=authHeader, verify=CERT)
 
 		if r.status_code == 200:
 			templateData = {
@@ -285,12 +290,12 @@ def withdraw():
 		}
 		return render_template('withdraw.html', **templateData)
 	else:
-		r = req.get(API_URL + '/session', verify=False).json()
+		r = req.get(API_URL + '/session', verify=CERT).json()
 		walletName = r['wallet_name']
 
 		authHeader = {'Authorization': 'Bearer ' + get_token()}
 		url = API_URL + '/wallet/'+walletName+'/taker/direct-send'
-		r = req.post(url, headers=authHeader, json=request.form, verify=False)
+		r = req.post(url, headers=authHeader, json=request.form, verify=CERT)
 		if r.status_code == 200:
 			flash("Funds withdrawn successfully!", category="success")
 			return redirect(url_for("balance"))
@@ -312,12 +317,12 @@ def yg():
 		}
 		return render_template('error.html', **templateData)
 
-	r = req.get(API_URL + '/session', verify=False).json()
+	r = req.get(API_URL + '/session', verify=CERT).json()
 	walletName = r['wallet_name']
 	makerRunning = r['maker_running']
 
 	authHeader = {'Authorization': 'Bearer ' + get_token()}
-	r = req.get(API_URL + '/wallet/'+walletName+'/display', headers=authHeader, verify=False)
+	r = req.get(API_URL + '/wallet/'+walletName+'/display', headers=authHeader, verify=CERT)
 	if r.status_code == 200:
 		walletInfo = r.json()['walletinfo']
 		total_balance_sats = round(float(walletInfo['total_balance'])*1e8)
@@ -337,12 +342,12 @@ def yg():
 
 @app.route("/getfbaddress", methods=['POST'])
 def getfbaddress():
-	r = req.get(API_URL + '/session', verify=False).json()
+	r = req.get(API_URL + '/session', verify=CERT).json()
 	walletName = r['wallet_name']
 	lockDate = request.form['lockdate-year'] + '-' + request.form['lockdate-month']
 	url = API_URL + '/wallet/' + walletName + '/address/timelock/new/' + lockDate
 	authHeader = {'Authorization': 'Bearer ' + get_token()}
-	r = req.get(url, headers=authHeader, verify=False)
+	r = req.get(url, headers=authHeader, verify=CERT)
 	if r.status_code == 200:
 		address = r.json()['address']
 		return deposit(address)
@@ -354,7 +359,7 @@ def getfbaddress():
 
 @app.route("/start-yg", methods=['POST'])
 def startYG():
-	r = req.get(API_URL + '/session', verify=False).json()
+	r = req.get(API_URL + '/session', verify=CERT).json()
 	walletName = r['wallet_name']
 	url = API_URL + '/wallet/' + walletName + '/maker/start'
 	authHeader = {'Authorization': 'Bearer ' + get_token()}
@@ -366,17 +371,17 @@ def startYG():
 		'minsize': MINSIZE
 
 	}
-	r = req.post(url, headers=authHeader, json=ygConfig, verify=False)
+	r = req.post(url, headers=authHeader, json=ygConfig, verify=CERT)
 	flash('Maker started successfully!', category="success")
 	return redirect(url_for('balance'))
 
 @app.route("/stop-yg")
 def stopYG():
-	r = req.get(API_URL + '/session', verify=False).json()
+	r = req.get(API_URL + '/session', verify=CERT).json()
 	walletName = r['wallet_name']
 	url = API_URL + '/wallet/' + walletName + '/maker/stop'
 	authHeader = {'Authorization': 'Bearer ' + get_token()}
-	r = req.get(url, headers=authHeader, verify=False)
+	r = req.get(url, headers=authHeader, verify=CERT)
 	flash('Maker stopped successfully!', category="success")
 	return redirect(url_for('balance'))
 
@@ -400,12 +405,12 @@ def coinjoin():
 		}
 		return render_template('coinjoin.html', **templateData)
 	else:
-		r = req.get(API_URL + '/session', verify=False).json()
+		r = req.get(API_URL + '/session', verify=CERT).json()
 		walletName = r['wallet_name']
 
 		authHeader = {'Authorization': 'Bearer ' + get_token()}
 		url = API_URL + '/wallet/'+walletName+'/taker/coinjoin'
-		r = req.post(url, headers=authHeader, json=request.form, verify=False)
+		r = req.post(url, headers=authHeader, json=request.form, verify=CERT)
 		if r.status_code == 200:
 			flash("Coinjoin submitted successfully!", category="success")
 			return redirect(url_for("balance"))
@@ -477,11 +482,11 @@ def showseed():
 		}
 		return render_template('error.html', **templateData)
 
-	r = req.get(API_URL + '/session', verify=False).json()
+	r = req.get(API_URL + '/session', verify=CERT).json()
 	walletName = r['wallet_name']
 	url = API_URL + '/wallet/' + walletName + '/getseed'
 	authHeader = {'Authorization': 'Bearer ' + get_token()}
-	r = req.get(url, headers=authHeader, verify=False)
+	r = req.get(url, headers=authHeader, verify=CERT)
 	seedphrase = r.json()['seedphrase'].split()
 	templateData = {
 		'seedphrase': seedphrase,
