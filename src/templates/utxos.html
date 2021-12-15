@@ -1,0 +1,90 @@
+{% extends 'layout.html' %}
+{% block title %}UTXOS{% endblock %}
+{% block content %}
+<h2 class="text-center mb-3">UTXOs</h2>
+<div class="row">
+	<div class="col">
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<th>S.no.</th>
+					<th>Address</th>
+					<th>Sats</th>
+					<th>Details</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for utxo in utxos %}
+				<tr>
+					<td>{{loop.index}}</td>
+					<td>{{utxo.address}}
+						{% if utxo.locktime %}
+						<span class="text-danger" data-bs-toggle="tooltip" title="Locked until {{ utxo.locktime }}">*</span>
+						{% endif %}
+					</td>
+					<td>{{utxo.value}}</td>
+					<td>
+						<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#{{utxo.address}}Modal">Details</button>
+						<div class="modal fade" id="{{utxo.address}}Modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+							<div class="modal-dialog modal-lg">
+								<div class="modal-content">
+									<div class="modal-header">
+										<h5 class="modal-title" id="exampleModalLabel">UTXO</h5>
+										<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+									</div>
+									<div class="modal-body">
+										<table class="table table-striped">
+											<tbody>
+												<tr>
+													<th>UTXO</th>
+													<td>{{utxo.utxo}}</td>
+												</tr>
+												<tr>
+													<th>Mixdepth</th>
+													<td>{{utxo.mixdepth}}</td>
+												</tr>
+												<tr>
+													<th>Confirmations</th>
+													<td>{{utxo.confirmations}}</td>
+												</tr>
+												<tr>
+													<th>Is external?</th>
+													<td>{{utxo.external}}</td>
+												</tr>
+												<tr>
+													<th>Is frozen?</th>
+													<td>{{utxo.frozen}}</td>
+												</tr>
+												<tr>
+													<th>Coinjoin tries remaining</th>
+													<td>{{utxo.tries_remaining}}/3</td>
+												</tr>
+												{% if utxo.locktime %}
+												<tr>
+													<th>Locked until</th>
+													<td>{{utxo.locktime}}</td>
+												</tr>
+												{% endif %}
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+					</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+{% endblock %}
+{% block script %}
+{{ super() }}
+<script type="text/javascript">
+	var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+	var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+		return new bootstrap.Tooltip(tooltipTriggerEl)
+	})
+</script>
+{% endblock %}

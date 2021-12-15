@@ -494,6 +494,31 @@ def showseed():
 	}
 	return render_template('seed.html', **templateData)
 
+@app.route("/utxos")
+def utxos():
+	if is_backend_down():
+		return render_template('error.html')
+
+	if is_wallet_locked():
+		return redirect(url_for('unlock'))
+
+	if not is_token_present():
+		templateData = {
+			'error': 'Session token missing. Joinmarket GUI is already open from another browser.'
+		}
+		return render_template('error.html', **templateData)
+
+	r = req.get(API_URL + '/session', verify=CERT).json()
+	walletName = r['wallet_name']
+	url = API_URL + '/wallet/' + walletName + '/utxos'
+	authHeader = {'Authorization': 'Bearer ' + get_token()}
+	r = req.get(url, headers=authHeader, verify=CERT)
+	templateData = {
+		'utxos': r.json()['utxos'],
+		'wallet_unlocked': True
+	}
+	return render_template('utxos.html', **templateData)
+
 @app.errorhandler(404)
 def not_found(e):
 	return render_template('404.html')
