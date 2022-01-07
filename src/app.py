@@ -517,6 +517,7 @@ def utxos():
 		'utxos': r.json()['utxos'],
 		'wallet_unlocked': True
 	}
+	# return r.json()['utxos']
 	return render_template('utxos.html', **templateData)
 
 @app.errorhandler(404)
