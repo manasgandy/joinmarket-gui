@@ -1,11 +1,17 @@
+import logging
 from flask import Flask, render_template, redirect, url_for, request, send_file, flash, session
+from flask import current_app as app
 import requests as req
 import os
 import logging
 from io import BytesIO
 import qrcode
+from .service import JoinmarketguiService
 
-app = Flask(__name__)
+logger = logging.getLogger(__name__)
+
+joinmarketgui_endpoint = JoinmarketguiService.blueprint
+
 app.secret_key = b'joinmarket-gui'
 
 try:
@@ -97,15 +103,20 @@ def is_token_present():
 	except:
 		return False
 
-@app.route("/")
-def index_page():
+@joinmarketgui_endpoint.route("/")
+def index():
+	return render_template('layout_embedded.html')
+
+@joinmarketgui_endpoint.route("/index")
+def index_pure():
+	logger.error("------------------backend down on API_URL "+API_URL)
 	if is_backend_down():
 		return render_template('error.html')
 	
 	if is_wallet_locked():
-		return redirect(url_for('unlock'))
+		return redirect(url_for('joinmarketgui_endpoint.unlock'))
 	elif is_token_present():
-		return redirect(url_for('balance'))
+		return redirect(url_for('joinmarketgui_endpoint.balance'))
 	else:
 		templateData = {
 			'error': 'Session token missing. Joinmarket GUI is already open from another browser.'
@@ -113,20 +124,21 @@ def index_page():
 		return render_template('error.html', **templateData)
 
 
-@app.route("/unlock", methods=['GET', 'POST'])
+@joinmarketgui_endpoint.route("/unlock", methods=['GET', 'POST'])
+@app.csrf.exempt
 def unlock():
 	if is_backend_down():
 		return render_template('error.html')
 
 	if request.method == 'GET':
 		if not is_wallet_locked():
-			return redirect(url_for('balance'))
+			return redirect(url_for('joinmarketgui_endpoint.balance'))
 		
 		# get list of wallets from Joinmarket
 		r = req.get(API_URL + '/wallet/all', verify=CERT)
 		listWallets = r.json()['wallets']
 		if listWallets == []:
-			return redirect(url_for('create'))
+			return redirect(url_for('joinmarketgui_endpoint.create'))
 		# prepare template data dictionary
 		templateData = {
 			'wallet_unlocked': False,
@@ -148,12 +160,13 @@ def unlock():
 			# flash success alert
 			flash("Wallet unlocked successfully!", category="success")
 			# redirect to balance page
-			return redirect(url_for('balance'))
+			return redirect(url_for('joinmarketgui_endpoint.balance'))
 		else:
 			flash("Error unlocking! Check password.", category="danger")
-			return redirect(url_for('unlock'))
+			return redirect(url_for('joinmarketgui_endpoint.unlock'))
 
-@app.route("/create", methods=['GET', 'POST'])
+@joinmarketgui_endpoint.route("/create", methods=['GET', 'POST'])
+@app.csrf.exempt
 def create():
 	if is_backend_down():
 		return render_template('error.html')
@@ -161,7 +174,7 @@ def create():
 	if request.method == 'GET':
 		if is_wallet_locked():
 			return render_template('create.html')
-		return redirect(url_for('index_page'))
+		return redirect(url_for('joinmarketgui_endpoint.index'))
 
 	else: # handle POST request
 		walletJSON = {
@@ -174,15 +187,16 @@ def create():
 			token = r.json()['token']
 			set_token(token)
 			flash("Wallet created successfully!", category="success")
-			return redirect(url_for('balance'))
+			return redirect(url_for('joinmarketgui_endpoint.balance'))
 
-@app.route("/balance")
+@joinmarketgui_endpoint.route("/balance")
+@app.csrf.exempt
 def balance():
 	if is_backend_down():
 		return render_template('error.html')
 
 	if is_wallet_locked():
-		return redirect(url_for('unlock'))
+		return redirect(url_for('joinmarketgui_endpoint.unlock'))
 
 	if not is_token_present():
 		templateData = {
@@ -215,15 +229,16 @@ def balance():
 		}
 		return render_template('balance.html', **templateData)
 	else:
+		print(r)
 		return r.json()
 
-@app.route("/lock")
+@joinmarketgui_endpoint.route("/lock")
 def lock():
 	if is_backend_down():
 		return render_template('error.html')
 
 	if is_wallet_locked():
-		return redirect(url_for('unlock'))
+		return redirect(url_for('joinmarketgui_endpoint.unlock'))
 
 	r = req.get(API_URL + '/session', verify=CERT).json()
 	walletName = r['wallet_name']
@@ -236,13 +251,13 @@ def lock():
 	else:
 		return redirect(url_for('balance'))
 
-@app.route("/deposit")
+@joinmarketgui_endpoint.route("/deposit")
 def deposit(address=None):
 	if is_backend_down():
 		return render_template('error.html')
 
 	if is_wallet_locked():
-		return redirect(url_for('unlock'))
+		return redirect(url_for('joinmarketgui_endpoint.unlock'))
 
 	if not is_token_present():
 		templateData = {
@@ -270,7 +285,7 @@ def deposit(address=None):
 		}
 		return render_template('deposit.html', **templateData)
 
-@app.route("/withdraw", methods=['GET', 'POST'])
+@joinmarketgui_endpoint.route("/withdraw", methods=['GET', 'POST'])
 def withdraw():
 	if is_backend_down():
 		return render_template('error.html')
@@ -283,7 +298,7 @@ def withdraw():
 
 	if request.method == 'GET':
 		if is_wallet_locked():
-			return redirect(url_for('unlock'))
+			return redirect(url_for('joinmarketgui_endpoint.unlock'))
 
 		templateData = {
 			'wallet_unlocked': True
@@ -303,13 +318,13 @@ def withdraw():
 			flash("Error withdrawing funds. Error code: " + str(r.status_code), category="danger")
 			return render_template("withdraw.html")
 
-@app.route("/yg")
+@joinmarketgui_endpoint.route("/yg")
 def yg():
 	if is_backend_down():
 		return render_template('error.html')
 
 	if is_wallet_locked():
-		return redirect(url_for('unlock'))
+		return redirect(url_for('joinmarketgui_endpoint.unlock'))
 
 	if not is_token_present():
 		templateData = {
@@ -340,7 +355,7 @@ def yg():
 	}
 	return render_template('yg.html', **templateData)
 
-@app.route("/getfbaddress", methods=['POST'])
+@joinmarketgui_endpoint.route("/getfbaddress", methods=['POST'])
 def getfbaddress():
 	r = req.get(API_URL + '/session', verify=CERT).json()
 	walletName = r['wallet_name']
@@ -357,7 +372,8 @@ def getfbaddress():
 		}
 		return render_template('error.html', **templateData)
 
-@app.route("/start-yg", methods=['POST'])
+@joinmarketgui_endpoint.route("/start-yg", methods=['POST'])
+@app.csrf.exempt
 def startYG():
 	r = req.get(API_URL + '/session', verify=CERT).json()
 	walletName = r['wallet_name']
@@ -375,7 +391,8 @@ def startYG():
 	flash('Maker started successfully!', category="success")
 	return redirect(url_for('balance'))
 
-@app.route("/stop-yg")
+@joinmarketgui_endpoint.route("/stop-yg")
+@app.csrf.exempt
 def stopYG():
 	r = req.get(API_URL + '/session', verify=CERT).json()
 	walletName = r['wallet_name']
@@ -385,7 +402,7 @@ def stopYG():
 	flash('Maker stopped successfully!', category="success")
 	return redirect(url_for('balance'))
 
-@app.route("/coinjoin", methods=['GET', 'POST'])
+@joinmarketgui_endpoint.route("/coinjoin", methods=['GET', 'POST'])
 def coinjoin():
 	if is_backend_down():
 		return render_template('error.html')
@@ -417,11 +434,11 @@ def coinjoin():
 		else:
 			return r.json()
 
-@app.route("/about")
+@joinmarketgui_endpoint.route("/about")
 def about():
 	return render_template("about.html")
 
-@app.route("/get_qr_code")
+@joinmarketgui_endpoint.route("/get_qr_code")
 def get_qr_code():
 	url = request.args.get('url')
 	img_buf = BytesIO()
@@ -430,7 +447,7 @@ def get_qr_code():
 	img_buf.seek(0)
 	return send_file(img_buf, mimetype='image/png')
 
-@app.route("/settings", methods=['GET', 'POST'])
+@joinmarketgui_endpoint.route("/settings", methods=['GET', 'POST'])
 def settings():
 	if is_backend_down():
 		return render_template('error.html')
@@ -468,7 +485,7 @@ def settings():
 	}
 	return render_template('settings.html', **templateData)
 
-@app.route("/showseed")
+@joinmarketgui_endpoint.route("/showseed")
 def showseed():
 	if is_backend_down():
 		return render_template('error.html')
@@ -494,7 +511,7 @@ def showseed():
 	}
 	return render_template('seed.html', **templateData)
 
-@app.route("/utxos")
+@joinmarketgui_endpoint.route("/utxos")
 def utxos():
 	if is_backend_down():
 		return render_template('error.html')
@@ -520,9 +537,7 @@ def utxos():
 	# return r.json()['utxos']
 	return render_template('utxos.html', **templateData)
 
-@app.errorhandler(404)
+@joinmarketgui_endpoint.errorhandler(404)
 def not_found(e):
 	return render_template('404.html')
 
-if __name__ == "__main__":
-	app.run(host='0.0.0.0', port=5002)
