@@ -31,3 +31,13 @@
 ## Donate
 
 BTC: [bc1qu3dskrp8v5x6t6vmsr56rnrutngan58np9wa75](https://blockstream.info/address/bc1qu3dskrp8v5x6t6vmsr56rnrutngan58np9wa75)
+
+## Installation as Specter-Extension
+```
+virtualenv --python=python3 .env
+. ./.env/bin/activate
+pip3 install -r requirements.txt --pre
+python3 -m cryptoadvance.specter server --config DevelopmentConfig --debug
+# http://localhost:25441
+# choose the joinmarket service (you might need to activate )
+```

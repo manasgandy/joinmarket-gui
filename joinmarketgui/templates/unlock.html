@@ -11,7 +11,7 @@
 				{% endfor %}
 			{% endif %}
 		{% endwith %}
-		<form id="wallet-unlock-form" action="/unlock" method="POST">
+		<form id="wallet-unlock-form" action="/svc/joinmarketgui/unlock" method="POST">
 			<select class="form-select" aria-label="Select wallet" id="select-wallet" name="walletname">
 				{% for wallet in wallets %}
 				<option value={{wallet}}>{{wallet}}</option>
